@@ -1,16 +1,119 @@
-interface Task {
+type Role = 'read' | 'write' | 'admin';
+type InvitationStatus = 'invited' | 'accepted' | 'declined' | 'expired';
+
+interface IUserLink {
   id: string;
-  content: string;
+  label: string;
+  url: string;
 }
 
-interface Column {
+interface IUser {
+  id: string;
+  email: string;
   name: string;
   description: string;
-  limit: number;
-  color: string;
-  items: Task[];
+  avatar: string;
+  created_at: Date;
+  updated_at: Date;
+  links: IUserLink[];
 }
 
-interface Columns {
-  [key: string]: Column;
+interface IProject {
+  id: string;
+  name: string;
+  description: string;
+  readme: string;
+  created_by: string;
+  created_at: Date;
+  updated_at: Date;
+  closed: boolean;
+}
+
+interface IProjectMember {
+  id: string;
+  project_id: string;
+  user_id: string;
+  role: Role;
+  invitationStatus: InvitationStatus;
+  invited_at: Date;
+  joined_at: Date;
+}
+
+interface IField {
+  id: string;
+  label: string;
+  description: string;
+  color: string;
+  created_at: Date;
+  updated_at: Date;
+  project_id: string;
+}
+
+interface IStatus extends IField {
+  order: number;
+  limit: number;
+}
+
+interface ILabel extends IField {}
+interface IPriority extends IField {}
+interface ISize extends IField {}
+
+interface ITask {
+  id: string;
+  project_id: string;
+  status_id: string;
+  title: string;
+  description: string;
+  labels: string[];
+  priority: string;
+  size: string;
+  startDate: Date;
+  endDate: Date;
+  created_at: Date;
+  updated_at: Date;
+  created_by: string;
+}
+
+interface IComment {
+  id: string;
+  content: string;
+  user_id: string;
+  task_id: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+type ActivityType = 'status' | 'label' | 'labels' | 'date' | 'user' | 'users';
+type ActivityPayload = 'id' | 'value' | 'ids';
+
+type ActivityObject =
+  | { type: 'status'; id: string }
+  | { type: 'label'; id: string }
+  | { type: 'labels'; ids: string[] }
+  | { type: 'date'; value: string }
+  | { type: 'user'; id: string }
+  | { type: 'users'; ids: string[] };
+
+type TaskActivity = (string | ActivityObject)[];
+
+type CustomFieldDBTableName = 'statuses' | 'labels' | 'priorities' | 'sizes';
+
+// tables ----------------
+//  - users
+//  - projects
+//  - project_members
+//  - statuses
+//  - labels
+//  - priorities
+//  - sizes
+//  - tasks
+//  - comments
+//  - activities
+
+// ------------------------------
+interface ICustomFieldData {
+  id: string;
+  label?: string;
+  color?: string;
+  description?: string;
 }

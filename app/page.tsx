@@ -1,3 +1,9 @@
+import Landing from './Landing';
+
 export default function Home() {
-  return <>Home Page</>;
+  return (
+    <>
+      <Landing />
+    </>
+  );
 }

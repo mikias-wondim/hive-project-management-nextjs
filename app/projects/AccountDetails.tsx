@@ -1,8 +1,10 @@
 import { ProfilePhotoUploader } from '@/components/ProfilePhotoUploader';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
+import { secondaryBtnStyles } from '../commonStyles';
 
 export const AccountDetails = () => {
   return (
@@ -28,7 +30,7 @@ export const AccountDetails = () => {
       </div>
 
       <Link href="/profile">
-        <Button className="w-full h-9 my-6 bg-slate-100 dark:bg-slate-800 text-gray-900 dark:text-white border border-slate-200 hover:bg-slate-200 dark:hover:bg-slate-900 dark:border-slate-700">
+        <Button className={cn(secondaryBtnStyles, 'w-full my-6')}>
           Edit Profile
         </Button>
       </Link>

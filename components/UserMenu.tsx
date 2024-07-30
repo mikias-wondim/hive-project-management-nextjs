@@ -1,4 +1,11 @@
-import { CreditCard, LogOut, Plus, User, UserPlus } from 'lucide-react';
+import {
+  CircleUser,
+  CreditCard,
+  LogOut,
+  Plus,
+  User,
+  UserPlus,
+} from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -11,12 +18,20 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { UserAvatar } from './Avatar';
 import Link from 'next/link';
+import { Button } from './ui/button';
 
 export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <UserAvatar />
+        <Button
+          variant="secondary"
+          size="icon"
+          className="rounded-full bg-gray-100 dark:bg-gray-700"
+        >
+          <CircleUser className="h-5 w-5" />
+          <span className="sr-only">Toggle user menu</span>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
         <DropdownMenuLabel className="pb-0">John Doe</DropdownMenuLabel>
@@ -49,7 +64,7 @@ export function UserMenu() {
             <UserPlus className="mr-2 h-4 w-4" />
             <span>Invite users</span>
           </DropdownMenuItem>
-          <Link href="/new-projects">
+          <Link href="/new-project">
             <DropdownMenuItem>
               <Plus className="mr-2 h-4 w-4" />
               <span>New Project</span>

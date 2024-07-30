@@ -18,7 +18,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 import { ReactNode } from 'react';
+import { secondaryBtnStyles, successBtnStyles } from '../commonStyles';
 
 interface Props {
   triggerElem: ReactNode;
@@ -27,7 +29,9 @@ interface Props {
 export const CreateProjectModal = ({ triggerElem }: Props) => {
   return (
     <Dialog>
-      <DialogTrigger>{triggerElem}</DialogTrigger>
+      <DialogTrigger className={cn(secondaryBtnStyles, 'h-9 px-8 mt-8')}>
+        {triggerElem}
+      </DialogTrigger>
       <DialogContent className="md:min-w-[700px] lg:min-w-[900px]">
         <DialogHeader>
           <DialogTitle>New Project</DialogTitle>
@@ -60,9 +64,7 @@ export const CreateProjectModal = ({ triggerElem }: Props) => {
 
         <DialogFooter>
           <div className="flex justify-end">
-            <Button className="bg-green-500 text-white min-w-36 h-9">
-              Create
-            </Button>
+            <Button className={cn(successBtnStyles, 'w-28')}>Create</Button>
           </div>
         </DialogFooter>
       </DialogContent>

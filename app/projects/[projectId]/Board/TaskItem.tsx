@@ -1,16 +1,17 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { placeholderUserImageUrl } from '@/consts';
-import React from 'react';
+
+import { TaskOptionsWindow } from './TaskOptionsWindow';
 
 interface Props {
-  item: Task;
+  item: ITask;
   projectName: string;
   userImageUrl?: string;
 }
 
 export const TaskItem = ({ item, projectName, userImageUrl }: Props) => {
   return (
-    <div className="bg-white dark:bg-gray-800 px-4 pt-3 mx-2 pb-6 rounded-md border border-gray-300 dark:border-gray-700 text-sm">
+    <div className="bg-white dark:bg-gray-900 px-4 pt-3 mx-2 pb-6 rounded-md border border-gray-300 dark:border-gray-700 text-sm">
       <div className="flex justify-between">
         <span className="text-[11px] text-gray-400 dark:text-gray-400">
           {projectName}
@@ -23,7 +24,7 @@ export const TaskItem = ({ item, projectName, userImageUrl }: Props) => {
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       </div>
-      {item.content}
+      <TaskOptionsWindow title={item.title} />
     </div>
   );
 };

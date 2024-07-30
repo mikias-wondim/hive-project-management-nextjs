@@ -3,19 +3,17 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import React from 'react';
 import { ColumnContainer } from './ColumnContainer';
-import { initialColumns } from './columnsData';
+import { statuses } from '@/mock-data';
 
 export const Board: React.FC = () => {
-  const [state, setState] = React.useState<Columns>(initialColumns);
-
   return (
     <div className="flex flex-nowrap space-x-4 p-4 overflow-x-auto w-full h-minus-135">
-      {Object.entries(state).map(([columnId, column]) => (
-        <ColumnContainer key={columnId} columnId={columnId} column={column} />
+      {statuses.map((column) => (
+        <ColumnContainer key={column.id} column={column} />
       ))}
 
       <div>
-        <Button className="bg-gray-800 w-8 h-8 p-2 border border-gray-700 text-gray-200">
+        <Button className="bg-gray-200 dark:bg-gray-800 w-8 h-8 p-2 border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-200">
           <Plus />
         </Button>
       </div>

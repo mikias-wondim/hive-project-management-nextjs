@@ -1,8 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
+import { successBtnStyles } from '../commonStyles';
 
 interface Props {
   placeholderText?: string;
@@ -19,7 +21,7 @@ const SearchAndButton = ({ placeholderText }: Props) => {
         />
       </div>
       <Link href="/new-project">
-        <Button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+        <Button className={cn(successBtnStyles, 'h-9')}>
           <Plus className="w-4 h-4 mr-2" />
           New project
         </Button>

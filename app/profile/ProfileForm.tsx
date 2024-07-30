@@ -20,6 +20,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus } from 'lucide-react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { primaryBtnStyles } from '../commonStyles';
 
 const profileFormSchema = z.object({
   name: z
@@ -160,7 +161,7 @@ export function ProfileForm() {
               Add URL
             </Button>
           </div>
-          <Button type="submit" className="bg-blue-500 text-white">
+          <Button type="submit" className={cn(primaryBtnStyles)}>
             Update profile
           </Button>
         </form>
