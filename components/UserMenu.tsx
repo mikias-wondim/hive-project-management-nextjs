@@ -60,10 +60,6 @@ export function UserMenu() {
         <DropdownMenuSeparator />
 
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <UserPlus className="mr-2 h-4 w-4" />
-            <span>Invite users</span>
-          </DropdownMenuItem>
           <Link href="/new-project">
             <DropdownMenuItem>
               <Plus className="mr-2 h-4 w-4" />

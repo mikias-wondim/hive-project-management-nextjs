@@ -1,6 +1,16 @@
 type Role = 'read' | 'write' | 'admin';
 type InvitationStatus = 'invited' | 'accepted' | 'declined' | 'expired';
 
+type ChartLayout =
+  | 'bar'
+  | 'column'
+  | 'line'
+  | 'stacked-area'
+  | 'stacked-bar'
+  | 'stacked-column';
+
+type CustomField = 'status' | 'label' | 'size' | 'priority';
+
 interface IUserLink {
   id: string;
   label: string;
@@ -96,7 +106,32 @@ type ActivityObject =
 
 type TaskActivity = (string | ActivityObject)[];
 
+interface IActivity {
+  id: string;
+  created_at: Date;
+  content: TaskActivity;
+  user_id: string;
+  task_id: string;
+  created_at: Date;
+}
+
+type TimelineType = 'activity' | 'comment';
+interface ITimeline {
+  id: string;
+  created_at: Date;
+  type: TimelineType;
+  value: IActivity | IComment;
+}
+
 type CustomFieldDBTableName = 'statuses' | 'labels' | 'priorities' | 'sizes';
+
+// ------------------------------
+interface ICustomFieldData {
+  id: string;
+  label?: string;
+  color?: string;
+  description?: string;
+}
 
 // tables ----------------
 //  - users
@@ -109,11 +144,3 @@ type CustomFieldDBTableName = 'statuses' | 'labels' | 'priorities' | 'sizes';
 //  - tasks
 //  - comments
 //  - activities
-
-// ------------------------------
-interface ICustomFieldData {
-  id: string;
-  label?: string;
-  color?: string;
-  description?: string;
-}

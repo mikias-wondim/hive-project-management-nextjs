@@ -17,7 +17,7 @@ export const EditableTitle = ({ title, isEditing, setIsEditing }: Props) => {
   if (isEditing) {
     return (
       <>
-        <div className="flex-grow">
+        <div className="flex-grow mr-2">
           <Input
             type="text"
             value={text}
@@ -53,7 +53,7 @@ export const EditableTitle = ({ title, isEditing, setIsEditing }: Props) => {
     <div className="flex flex-grow items-center">
       <h1
         title={title}
-        className="text-left text-sm sm:text-md md:text-2xl flex-grow truncate"
+        className="text-left text-sm sm:text-md md:text-2xl lg:text-3xl flex-grow truncate"
       >
         {title}
       </h1>

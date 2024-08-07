@@ -35,11 +35,9 @@ const HeadingMenu = ({ editor }: { editor: Editor | null }) => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <ToolbarIconButton isActive={false}>
-          <Heading className="w-4 h-4" />
-          <ChevronDown />
-        </ToolbarIconButton>
+      <DropdownMenuTrigger className="p-1 rounded-sm flex items-center gap-0 hover:bg-slate-200 dark:hover:bg-slate-700 text-gray-600 dark:text-gray-400">
+        <Heading className="w-4 h-4" />
+        <ChevronDown className="w-4 h-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem

@@ -39,11 +39,12 @@ export const AlignMenu = ({ editor }: { editor: Editor | null }) => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <ToolbarIconButton isActive={false} title="Text align">
-          <AlignJustify className="w-4 h-4" />
-          <ChevronDown />
-        </ToolbarIconButton>
+      <DropdownMenuTrigger
+        title="Text align"
+        className="p-1 rounded-sm flex items-center gap-0 hover:bg-slate-200 dark:hover:bg-slate-700 text-gray-600 dark:text-gray-400"
+      >
+        <AlignJustify className="w-4 h-4" />
+        <ChevronDown className="w-4 h-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem

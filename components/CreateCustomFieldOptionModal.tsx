@@ -13,17 +13,20 @@ import { useModalDialog } from '@/hooks/useModalDialog';
 import { cn } from '@/lib/utils';
 import { v4 as uid } from 'uuid';
 import { CustomOptionForm } from './CustomOptionForm';
+import React, { ReactElement } from 'react';
 
 interface Props {
   title: string;
   dbTableName: CustomFieldDBTableName;
-  triggerLabel: string;
+  triggerLabel?: string;
+  triggerBtn?: ReactElement;
 }
 
 export const CreateCustomFieldOptionModal = ({
   title,
   dbTableName,
   triggerLabel,
+  triggerBtn,
 }: Props) => {
   const { isModalOpen, openModal, closeModal } = useModalDialog();
 
@@ -40,9 +43,13 @@ export const CreateCustomFieldOptionModal = ({
       onOpenChange={(isOpen) => !isOpen && closeModal()}
     >
       <DialogTrigger asChild>
-        <Button className={cn(successBtnStyles)} onClick={openModal}>
-          {triggerLabel}
-        </Button>
+        {triggerBtn ? (
+          React.cloneElement(triggerBtn, { onClick: openModal })
+        ) : (
+          <Button className={cn(successBtnStyles)} onClick={openModal}>
+            {triggerLabel}
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-96 max-h-[100vh] overflow-y-auto">
         <DialogHeader>

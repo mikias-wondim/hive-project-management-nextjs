@@ -4,12 +4,13 @@ import { AvatarProps } from '@radix-ui/react-avatar';
 
 interface Props extends AvatarProps {
   name?: string;
+  url?: string;
 }
 
-export const UserAvatar: React.FC<Props> = ({ name, ...rest }) => {
+export const UserAvatar: React.FC<Props> = ({ name, url, ...rest }) => {
   return (
     <Avatar {...rest}>
-      <AvatarImage src={placeholderUserImageUrl} alt="user avatar" />
+      <AvatarImage src={url} alt="user avatar" />
       <AvatarFallback>
         {name ? name.charAt(0).toUpperCase() : 'O'}
       </AvatarFallback>

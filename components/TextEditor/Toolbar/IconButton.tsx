@@ -13,7 +13,7 @@ export const ToolbarIconButton = ({
   return (
     <Button
       className={cn(
-        'p-0 h-7 w-7 hover:bg-slate-200 dark:hover:bg-slate-700 text-gray-600 dark:text-gray-400',
+        'p-0 h-6 w-7 hover:bg-slate-200 dark:hover:bg-slate-700 text-gray-600 dark:text-gray-400',
         isActive ? 'bg-slate-200 dark:bg-slate-700' : 'bg-transparent'
       )}
       {...props}

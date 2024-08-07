@@ -33,3 +33,20 @@ export const getCustomFieldTagColorsForTheme = (
     theme === 'light' ? 60 : 45
   )}`,
 });
+
+export function getAllKeysExceptLabelKey(
+  data: any[],
+  labelKey: string
+): string[] {
+  const keysSet = new Set<string>();
+
+  data.forEach((item) => {
+    Object.keys(item).forEach((key) => {
+      if (key !== labelKey) {
+        keysSet.add(key);
+      }
+    });
+  });
+
+  return Array.from(keysSet);
+}

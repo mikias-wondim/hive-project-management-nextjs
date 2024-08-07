@@ -9,12 +9,23 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { Ellipsis } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CreateOrEditLabel } from './CreateOrEditLabel';
 import { labels } from '@/mock-data';
+import { LabelBadge } from '@/components/LabelBadge';
+import { useSearchParams } from 'next/navigation';
 
 export const LabelList = () => {
+  const searchParams = useSearchParams();
   const [labelId, setLabelId] = useState('');
+
+  useEffect(() => {
+    const labelIdParams = searchParams.get('label_id');
+
+    if (labelIdParams) {
+      setLabelId(labelIdParams);
+    }
+  }, [searchParams]);
 
   return (
     <div className="w-full rounded-md shadow-md">
@@ -24,13 +35,11 @@ export const LabelList = () => {
             <React.Fragment key={label.id}>
               <tr>
                 <td className="px-6 py-6 whitespace-nowrap">
-                  <span
-                    title={label.description}
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white`}
-                    style={{ backgroundColor: label.color }}
-                  >
-                    {label.label}
-                  </span>
+                  <LabelBadge
+                    labelText={label.label}
+                    description={label.description}
+                    color={label.color}
+                  />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 truncate hidden md:block">
                   {label.description}
