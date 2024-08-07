@@ -28,4 +28,5 @@ export const customFieldsColors = [
   'hsl(45, 90%, 54%)',
 ];
 
+export const grayFieldColor = customFieldsColors[0];
 export const defaultFieldColor = customFieldsColors[1];

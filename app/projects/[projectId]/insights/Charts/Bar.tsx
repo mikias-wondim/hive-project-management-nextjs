@@ -4,6 +4,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { grayFieldColor } from '@/consts/colors';
 import { getAllKeysExceptLabelKey } from '@/lib/utils';
 import {
   Bar,
@@ -17,9 +18,10 @@ import {
 interface Props {
   data: any[];
   config: ChartConfig;
+  colors: { [label: string]: string };
 }
 
-export const BarChart = ({ data, config }: Props) => {
+export const BarChart = ({ data, config, colors }: Props) => {
   const keys = getAllKeysExceptLabelKey(data, 'name');
 
   return (
@@ -42,9 +44,9 @@ export const BarChart = ({ data, config }: Props) => {
           <Bar
             key={dataKey}
             dataKey={dataKey}
-            fill="#3182ce"
             fillOpacity={0.1}
-            stroke="#3182ce"
+            fill={colors[dataKey] || grayFieldColor}
+            stroke={colors[dataKey] || grayFieldColor}
             strokeWidth={2}
           />
         ))}

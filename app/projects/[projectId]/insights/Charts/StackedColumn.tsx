@@ -4,15 +4,17 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { grayFieldColor } from '@/consts/colors';
 import { getAllKeysExceptLabelKey } from '@/lib/utils';
 import { Bar, BarChart, CartesianGrid, Legend, XAxis, YAxis } from 'recharts';
 
 interface Props {
   data: any[];
   config: ChartConfig;
+  colors: { [label: string]: string };
 }
 
-export const StackedColumnChart = ({ data, config }: Props) => {
+export const StackedColumnChart = ({ data, config, colors }: Props) => {
   const keys = getAllKeysExceptLabelKey(data, 'name');
 
   return (
@@ -38,9 +40,9 @@ export const StackedColumnChart = ({ data, config }: Props) => {
             key={dataKey}
             dataKey={dataKey}
             name={dataKey}
-            fill="#3182ce"
             fillOpacity={0.1}
-            stroke="#3182ce"
+            fill={colors[dataKey] || grayFieldColor}
+            stroke={colors[dataKey] || grayFieldColor}
             strokeWidth={2}
             stackId="a"
           />

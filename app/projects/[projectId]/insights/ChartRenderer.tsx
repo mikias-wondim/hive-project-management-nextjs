@@ -33,7 +33,7 @@ export function ChartRenderer({ layout }: Props) {
     (priority) => priority.project_id === params.projectId
   );
 
-  const data = generateChartData(
+  const { data, colors } = generateChartData(
     xAxis,
     groupBy,
     allTasks,
@@ -43,27 +43,29 @@ export function ChartRenderer({ layout }: Props) {
     allPriorities
   );
 
-  console.log(data);
-
   if (layout === 'column') {
-    return <ColumnChart data={data} config={chartConfig} colors={[]} />;
+    return <ColumnChart data={data} config={chartConfig} colors={colors} />;
   }
 
   if (layout === 'line') {
-    return <LineChart data={data} config={chartConfig} />;
+    return <LineChart data={data} config={chartConfig} colors={colors} />;
   }
 
   if (layout === 'stacked-area') {
-    return <StackedAreaChart data={data} config={chartConfig} />;
+    return (
+      <StackedAreaChart data={data} config={chartConfig} colors={colors} />
+    );
   }
 
   if (layout === 'stacked-bar') {
-    return <StackedBarChart data={data} config={chartConfig} />;
+    return <StackedBarChart data={data} config={chartConfig} colors={colors} />;
   }
 
   if (layout === 'stacked-column') {
-    return <StackedColumnChart data={data} config={chartConfig} />;
+    return (
+      <StackedColumnChart data={data} config={chartConfig} colors={colors} />
+    );
   }
 
-  return <BarChart data={data} config={chartConfig} />;
+  return <BarChart data={data} config={chartConfig} colors={colors} />;
 }

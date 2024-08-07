@@ -4,15 +4,17 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { defaultFieldColor } from '@/consts/colors';
 import { getAllKeysExceptLabelKey } from '@/lib/utils';
 import { Area, AreaChart, CartesianGrid, Legend, XAxis, YAxis } from 'recharts';
 
 interface Props {
   data: any[];
   config: ChartConfig;
+  colors: { [label: string]: string };
 }
 
-export const StackedAreaChart = ({ data, config }: Props) => {
+export const StackedAreaChart = ({ data, config, colors }: Props) => {
   const keys = getAllKeysExceptLabelKey(data, 'name');
 
   return (
@@ -36,9 +38,9 @@ export const StackedAreaChart = ({ data, config }: Props) => {
             type="monotone"
             key={dataKey}
             dataKey={dataKey}
-            fill="#3182ce"
             fillOpacity={0.1}
-            stroke="#3182ce"
+            fill={colors[dataKey] || defaultFieldColor}
+            stroke={colors[dataKey] || defaultFieldColor}
             strokeWidth={2}
           />
         ))}

@@ -4,13 +4,14 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { grayFieldColor } from '@/consts/colors';
 import { getAllKeysExceptLabelKey } from '@/lib/utils';
 import { Bar, BarChart, CartesianGrid, Legend, XAxis, YAxis } from 'recharts';
 
 interface Props {
   data: any[];
   config: ChartConfig;
-  colors: string[];
+  colors: { [label: string]: string };
 }
 
 export const ColumnChart = ({ data, config, colors }: Props) => {
@@ -34,16 +35,18 @@ export const ColumnChart = ({ data, config, colors }: Props) => {
           className="top-20"
         />
 
-        {keys.map((dataKey, i) => (
-          <Bar
-            key={dataKey}
-            dataKey={dataKey}
-            fill="#3182ce"
-            fillOpacity={0.1}
-            stroke="#3182ce"
-            strokeWidth={2}
-          />
-        ))}
+        {keys.map((dataKey, i) => {
+          return (
+            <Bar
+              key={dataKey}
+              dataKey={dataKey}
+              fillOpacity={0.1}
+              fill={colors[dataKey] || grayFieldColor}
+              stroke={colors[dataKey] || grayFieldColor}
+              strokeWidth={2}
+            />
+          );
+        })}
       </BarChart>
     </ChartContainer>
   );

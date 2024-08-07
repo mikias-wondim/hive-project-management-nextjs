@@ -22,6 +22,7 @@ import {
   getTasksByStatusGroupedByPriority,
   getTasksByStatusGroupedBySize,
 } from './tasks-by-status-grouped-by-field';
+import { createColorMapping } from './color-mapping';
 
 type DataGenerator = (tasks: ITask[], ...args: any[]) => any[];
 
@@ -56,7 +57,7 @@ export function generateChartData(
   labels: ILabel[],
   sizes: ISize[],
   priorities: IPriority[]
-): any[] {
+): { data: any[]; colors: { [label: string]: string } } {
   const key = `${xaxis},${groupBy}`;
   const dataGenerator = dataGenerators[key];
 
@@ -66,37 +67,85 @@ export function generateChartData(
 
   switch (key) {
     case SelectedCustomField.TasksByStatus:
-      return dataGenerator(tasks, statuses);
+      return {
+        data: dataGenerator(tasks, statuses),
+        colors: createColorMapping(statuses),
+      };
     case SelectedCustomField.TasksByLabel:
-      return dataGenerator(tasks, labels);
+      return {
+        data: dataGenerator(tasks, labels),
+        colors: createColorMapping(labels),
+      };
     case SelectedCustomField.TasksBySize:
-      return dataGenerator(tasks, sizes);
+      return {
+        data: dataGenerator(tasks, sizes),
+        colors: createColorMapping(sizes),
+      };
     case SelectedCustomField.TasksByPriority:
-      return dataGenerator(tasks, priorities);
+      return {
+        data: dataGenerator(tasks, priorities),
+        colors: createColorMapping(priorities),
+      };
     case SelectedCustomField.TasksByStatusGroupedByLabel:
-      return dataGenerator(tasks, statuses, labels);
+      return {
+        data: dataGenerator(tasks, statuses, labels),
+        colors: createColorMapping(labels),
+      };
     case SelectedCustomField.TasksByStatusGroupedBySize:
-      return dataGenerator(tasks, statuses, sizes);
+      return {
+        data: dataGenerator(tasks, statuses, sizes),
+        colors: createColorMapping(sizes),
+      };
     case SelectedCustomField.TasksByStatusGroupedByPriority:
-      return dataGenerator(tasks, statuses, priorities);
+      return {
+        data: dataGenerator(tasks, statuses, priorities),
+        colors: createColorMapping(priorities),
+      };
     case SelectedCustomField.TasksByLabelGroupedByStatus:
-      return dataGenerator(tasks, labels, statuses);
+      return {
+        data: dataGenerator(tasks, labels, statuses),
+        colors: createColorMapping(statuses),
+      };
     case SelectedCustomField.TasksByLabelGroupedBySize:
-      return dataGenerator(tasks, labels, sizes);
+      return {
+        data: dataGenerator(tasks, labels, sizes),
+        colors: createColorMapping(sizes),
+      };
     case SelectedCustomField.TasksByLabelGroupedByPriority:
-      return dataGenerator(tasks, labels, priorities);
+      return {
+        data: dataGenerator(tasks, labels, priorities),
+        colors: createColorMapping(priorities),
+      };
     case SelectedCustomField.TasksBySizeGroupedByStatus:
-      return dataGenerator(tasks, sizes, statuses);
+      return {
+        data: dataGenerator(tasks, sizes, statuses),
+        colors: createColorMapping(statuses),
+      };
     case SelectedCustomField.TasksBySizeGroupedByLabel:
-      return dataGenerator(tasks, sizes, labels);
+      return {
+        data: dataGenerator(tasks, sizes, labels),
+        colors: createColorMapping(labels),
+      };
     case SelectedCustomField.TasksBySizeGroupedByPriority:
-      return dataGenerator(tasks, sizes, priorities);
+      return {
+        data: dataGenerator(tasks, sizes, priorities),
+        colors: createColorMapping(priorities),
+      };
     case SelectedCustomField.TasksByPriorityGroupedByStatus:
-      return dataGenerator(tasks, priorities, statuses);
+      return {
+        data: dataGenerator(tasks, priorities, statuses),
+        colors: createColorMapping(statuses),
+      };
     case SelectedCustomField.TasksByPriorityGroupedByLabel:
-      return dataGenerator(tasks, priorities, labels);
+      return {
+        data: dataGenerator(tasks, priorities, labels),
+        colors: createColorMapping(labels),
+      };
     case SelectedCustomField.TasksByPriorityGroupedBySize:
-      return dataGenerator(tasks, priorities, sizes);
+      return {
+        data: dataGenerator(tasks, priorities, sizes),
+        colors: createColorMapping(sizes),
+      };
     default:
       throw new Error(
         `Unhandled data generation case for selected options: ${key}`

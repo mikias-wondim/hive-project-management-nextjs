@@ -4,6 +4,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { SelectedCustomField } from '@/consts';
+import { defaultFieldColor, grayFieldColor } from '@/consts/colors';
 import { getAllKeysExceptLabelKey } from '@/lib/utils';
 import {
   CartesianGrid,
@@ -17,10 +19,10 @@ import {
 interface Props {
   data: any[];
   config: ChartConfig;
+  colors: { [label: string]: string };
 }
 
-export const LineChart = ({ data, config }: Props) => {
-  console.log('line');
+export const LineChart = ({ data, config, colors }: Props) => {
   const keys = getAllKeysExceptLabelKey(data, 'name');
 
   return (
@@ -46,8 +48,8 @@ export const LineChart = ({ data, config }: Props) => {
             key={dataKey}
             dataKey={dataKey}
             name={dataKey}
-            fill="#3182ce"
-            stroke="#3182ce"
+            fill={colors[dataKey] || defaultFieldColor}
+            stroke={colors[dataKey] || defaultFieldColor}
             strokeWidth={2}
           />
         ))}
