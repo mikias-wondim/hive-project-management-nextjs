@@ -1,7 +1,6 @@
 'use client';
 
 import { ProfilePhotoUploader } from '@/components/ProfilePhotoUploader';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -17,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus } from 'lucide-react';
+import { Trash } from 'lucide-react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { primaryBtnStyles } from '../commonStyles';
@@ -39,6 +38,7 @@ const profileFormSchema = z.object({
   urls: z
     .array(
       z.object({
+        label: z.string(),
         value: z.string().url({ message: 'Please enter a valid URL.' }),
       })
     )
@@ -49,7 +49,7 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 const defaultValues: Partial<ProfileFormValues> = {
   bio: '',
-  urls: [{ value: '' }],
+  urls: [{ value: '', label: 'label' }],
 };
 
 export function ProfileForm() {
@@ -59,7 +59,7 @@ export function ProfileForm() {
     mode: 'onChange',
   });
 
-  const { fields, append } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     name: 'urls',
     control: form.control,
   });
@@ -140,12 +140,26 @@ export function ProfileForm() {
                     <FormDescription className={cn(index !== 0 && 'sr-only')}>
                       Add links to your website, blog, or social media profiles.
                     </FormDescription>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="https://example.com/username"
-                      />
-                    </FormControl>
+                    <div className="flex gap-1">
+                      <FormControl className="w-[100px]">
+                        <Input {...field} placeholder="Platform" />
+                      </FormControl>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="https://example.com/username"
+                        />
+                      </FormControl>
+                      {fields.length > 1 && (
+                        <Button
+                          variant="ghost"
+                          className="p-2 text-red-500 hover:bg-red-100 hover:text-red-600 dark:text-red-800 dark:hover:bg-red-900 dark:hover:text-red-300"
+                          onClick={() => remove(index)}
+                        >
+                          <Trash className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -156,7 +170,7 @@ export function ProfileForm() {
               variant="outline"
               size="sm"
               className="mt-2"
-              onClick={() => append({ value: '' })}
+              onClick={() => append({ value: '', label: '' })}
             >
               Add URL
             </Button>

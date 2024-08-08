@@ -9,6 +9,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { deleteBtnStyles } from '../commonStyles';
 
 export const Projects = () => {
   return (
@@ -23,14 +25,23 @@ export const Projects = () => {
             <SquareKanban className="w-4 h-4 mr-2" />
             <span>All Projects</span>
           </TabsTrigger>
+          <TabsTrigger value="closed-projects">
+            <SquareKanban className="w-4 h-4 mr-2" />
+            <span>Closed Projects</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-projects">
           <SearchAndButton placeholderText="Search my projects" />
-          <ProjectList />
+          <ProjectList tab="mine" />
         </TabsContent>
         <TabsContent value="all-projects">
           <SearchAndButton />
+          <ProjectList tab="all" />
+        </TabsContent>
+        <TabsContent value="closed-projects">
+          <SearchAndButton placeholderText="Search closed projects" />
+          <ProjectList tab="closed" />
         </TabsContent>
       </Tabs>
     </div>
@@ -60,12 +71,24 @@ const projects = [
   },
 ];
 
-const ProjectList = () => {
+interface ProjectListProps {
+  tab: 'mine' | 'all' | 'closed';
+}
+
+const ProjectList = ({ tab }: ProjectListProps) => {
   return (
     <div className="border rounded-md">
       <div className="flex justify-between items-center bg-slate-100 dark:bg-slate-900 p-6">
         <div>
-          <span className="text-sm">Projects(2)</span>
+          {tab === 'mine' && (
+            <span className="text-sm">My Projects({projects.length})</span>
+          )}
+          {tab === 'all' && (
+            <span className="text-sm">All Projects({projects.length})</span>
+          )}
+          {tab === 'closed' && (
+            <span className="text-sm">Closed Projects({projects.length})</span>
+          )}
         </div>
         <div className="relative">
           <DropdownMenu>
@@ -105,10 +128,21 @@ const ProjectList = () => {
                 <DropdownMenuTrigger className=" font-bold">
                   . . .
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                  <DropdownMenuItem>Delete</DropdownMenuItem>
-                </DropdownMenuContent>
+                {tab === 'closed' ? (
+                  <DropdownMenuContent>
+                    <DropdownMenuItem>ReOpen</DropdownMenuItem>
+                    <DropdownMenuItem className={cn(deleteBtnStyles)}>
+                      Delete Permanently
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                ) : (
+                  <DropdownMenuContent>
+                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                    <DropdownMenuItem className={cn(deleteBtnStyles)}>
+                      Close
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                )}
               </DropdownMenu>
             </div>
           </div>
