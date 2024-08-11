@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ReactNode } from 'react';
-import { usePathname } from 'next/navigation';
+import { useParams, usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 const navigationItems: (
@@ -28,33 +28,33 @@ const navigationItems: (
 )[] = [
   {
     label: 'Project settings',
-    link: '/projects/1234/settings',
+    link: '/settings',
     icon: <Settings className="h-4 w-4" />,
   },
   {
     label: 'Manage access',
-    link: '/projects/1234/settings/access',
+    link: '/settings/access',
     icon: <Users className="h-4 w-4" />,
   },
   'separator',
   {
     label: 'Label',
-    link: '/projects/1234/settings/labels',
+    link: '/settings/labels',
     icon: <Tags className="h-4 w-4" />,
   },
   {
     label: 'Status',
-    link: '/projects/1234/settings/statuses',
+    link: '/settings/statuses',
     icon: <Kanban className="h-4 w-4" />,
   },
   {
     label: 'Priority',
-    link: '/projects/1234/settings/priorities',
+    link: '/settings/priorities',
     icon: <ArrowDownNarrowWide className="h-4 w-4" />,
   },
   {
     label: 'Size',
-    link: '/projects/1234/settings/sizes',
+    link: '/settings/sizes',
     icon: <Proportions className="h-4 w-4" />,
   },
 ];
@@ -65,6 +65,7 @@ interface Props {
 }
 export const SettingsLayout = ({ title, children }: Props) => {
   const pathname = usePathname();
+  const params = useParams();
 
   return (
     <div className="grid h-minus-80 w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -72,13 +73,16 @@ export const SettingsLayout = ({ title, children }: Props) => {
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6 dark:bg-gray-950">
             <Link
-              href="/projects/1234"
+              href={`/projects/${params.projectId}`}
               className="flex items-center gap-2 font-semibold"
             >
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <span className="mx-2">Settings</span>
-            <Link href="/projects/1234/insights" className="ml-auto">
+            <Link
+              href={`/projects/${params.projectId}/insights`}
+              className="ml-auto"
+            >
               <Button
                 title="Insights"
                 variant="outline"
@@ -97,10 +101,10 @@ export const SettingsLayout = ({ title, children }: Props) => {
                 ) : (
                   <Link
                     key={item.link}
-                    href={item.link}
+                    href={`/projects/${params.projectId}${item.link}`}
                     className={cn(
                       'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary',
-                      pathname === item.link
+                      pathname === `/projects/${params.projectId}${item.link}`
                         ? 'bg-muted  text-gray-800 dark:text-gray-200'
                         : ''
                     )}

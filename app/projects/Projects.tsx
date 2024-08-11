@@ -11,6 +11,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { deleteBtnStyles } from '../commonStyles';
+import { projects } from '@/mock-data';
+import Link from 'next/link';
 
 export const Projects = () => {
   return (
@@ -48,46 +50,36 @@ export const Projects = () => {
   );
 };
 
-const projects = [
-  {
-    name: 'FMT Design and Print',
-    description: 'E-commerce platform for FMT Design and Print',
-    status: 'Private',
-    updated: 'updated yesterday',
-    type: {
-      label: 'Team Retrospective',
-      value: 'retro',
-    },
-  },
-  {
-    name: 'Drone Hub Kanban',
-    description: '',
-    status: 'Private',
-    updated: 'updated on Feb 7, 2023',
-    type: {
-      label: 'Kanban board',
-      value: 'kanban',
-    },
-  },
-];
-
 interface ProjectListProps {
   tab: 'mine' | 'all' | 'closed';
 }
 
 const ProjectList = ({ tab }: ProjectListProps) => {
+  const availableProjects =
+    tab === 'mine' || tab === 'all'
+      ? projects.filter((project) => !project.closed)
+      : tab === 'closed'
+      ? projects.filter((project) => project.closed)
+      : [];
+
   return (
     <div className="border rounded-md">
       <div className="flex justify-between items-center bg-slate-100 dark:bg-slate-900 p-6">
         <div>
           {tab === 'mine' && (
-            <span className="text-sm">My Projects({projects.length})</span>
+            <span className="text-sm">
+              My Projects({availableProjects.length})
+            </span>
           )}
           {tab === 'all' && (
-            <span className="text-sm">All Projects({projects.length})</span>
+            <span className="text-sm">
+              All Projects({availableProjects.length})
+            </span>
           )}
           {tab === 'closed' && (
-            <span className="text-sm">Closed Projects({projects.length})</span>
+            <span className="text-sm">
+              Closed Projects({availableProjects.length})
+            </span>
           )}
         </div>
         <div className="relative">
@@ -104,23 +96,25 @@ const ProjectList = ({ tab }: ProjectListProps) => {
         </div>
       </div>
       <div>
-        {projects.map((project, index) => (
+        {availableProjects.map((project, index) => (
           <div
             key={index}
             className="p-6 border-b flex justify-between items-center"
           >
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-lg font-semibold">{project.name}</span>
-                <Badge className="text-xs bg-transparent dark:bg-transparent border border-gray-300 text-gray-400 dark:text-gray-600 font-normal">
+                <Link href={`/projects/${project.id}`}>
+                  <h1 className="text-lg font-semibold">{project.name}</h1>
+                </Link>
+                {/* <Badge className="text-xs bg-transparent dark:bg-transparent border border-gray-300 text-gray-400 dark:text-gray-600 font-normal">
                   {project.type.label}
-                </Badge>
+                </Badge> */}
               </div>
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
                 {project.description}
               </p>
               <p className="text-gray-600 dark:text-gray-400 text-xs">
-                {project.updated}
+                {new Date(project.updated_at).toDateString()}
               </p>
             </div>
             <div className="relative">

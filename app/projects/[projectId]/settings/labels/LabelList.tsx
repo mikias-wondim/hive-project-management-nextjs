@@ -10,12 +10,22 @@ import {
 import { cn } from '@/lib/utils';
 import { Ellipsis } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { CreateOrEditLabel } from './CreateOrEditLabel';
-import { labels } from '@/mock-data';
 import { LabelBadge } from '@/components/LabelBadge';
 import { useSearchParams } from 'next/navigation';
+import { defaultFieldColor } from '@/consts/colors';
+import { CreateOrEditLabelForm } from '@/components/CreateOrEditLabelForm';
 
-export const LabelList = () => {
+interface Props {
+  labels: ICustomFieldData[];
+  hiddenDescription?: boolean;
+  removeItem?: (id: string) => void;
+}
+
+export const LabelList = ({
+  labels,
+  hiddenDescription = false,
+  removeItem,
+}: Props) => {
   const searchParams = useSearchParams();
   const [labelId, setLabelId] = useState('');
 
@@ -34,17 +44,19 @@ export const LabelList = () => {
           {labels.map((label) => (
             <React.Fragment key={label.id}>
               <tr>
-                <td className="px-6 py-6 whitespace-nowrap">
+                <td className="p-4 whitespace-nowrap">
                   <LabelBadge
-                    labelText={label.label}
-                    description={label.description}
-                    color={label.color}
+                    labelText={label.label || ''}
+                    description={label.description || ''}
+                    color={label.color || defaultFieldColor}
                   />
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 truncate hidden md:block">
-                  {label.description}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                {!hiddenDescription && (
+                  <td className="p-4 text-sm text-gray-500 dark:text-gray-400 truncate hidden md:block">
+                    {label.description}
+                  </td>
+                )}
+                <td className="p-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="relative inline-block text-left">
                     <div className="space-x-1 hidden lg:flex">
                       <Button
@@ -61,13 +73,7 @@ export const LabelList = () => {
                           secondaryBtnStyles,
                           'text-xs text-red-600 dark:text-red-300 h-8 rounded-sm'
                         )}
-                        onClick={() =>
-                          confirm(
-                            'Are you sure you want to delete ' +
-                              label.label +
-                              ' label'
-                          )
-                        }
+                        onClick={() => removeItem?.(label.id)}
                       >
                         Delete
                       </Button>
@@ -82,13 +88,7 @@ export const LabelList = () => {
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() =>
-                            confirm(
-                              'Are you sure you want to delete ' +
-                                label.label +
-                                ' label'
-                            )
-                          }
+                          onClick={() => removeItem?.(label.id)}
                         >
                           Delete
                         </DropdownMenuItem>
@@ -100,9 +100,8 @@ export const LabelList = () => {
               {labelId === label.id && (
                 <tr>
                   <td colSpan={4} className="p-4">
-                    <CreateOrEditLabel
+                    <CreateOrEditLabelForm
                       mode="edit"
-                      show
                       cancel={() => setLabelId('')}
                       data={label}
                     />

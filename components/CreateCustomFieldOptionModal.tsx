@@ -20,6 +20,7 @@ interface Props {
   dbTableName: CustomFieldDBTableName;
   triggerLabel?: string;
   triggerBtn?: ReactElement;
+  handleSubmitLocal?: (data: Omit<ICustomFieldData, 'id'>) => void;
 }
 
 export const CreateCustomFieldOptionModal = ({
@@ -27,6 +28,7 @@ export const CreateCustomFieldOptionModal = ({
   dbTableName,
   triggerLabel,
   triggerBtn,
+  handleSubmitLocal,
 }: Props) => {
   const { isModalOpen, openModal, closeModal } = useModalDialog();
 
@@ -35,6 +37,13 @@ export const CreateCustomFieldOptionModal = ({
     const dataToInsert = { id: uid(), label, color, description };
     console.log('insert', dataToInsert, 'into', dbTableName);
     closeModal();
+  };
+
+  const handleSubmitLocalData = (data: Omit<ICustomFieldData, 'id'>) => {
+    if (typeof handleSubmitLocal === 'function') {
+      handleSubmitLocal(data);
+      closeModal();
+    }
   };
 
   return (
@@ -57,7 +66,11 @@ export const CreateCustomFieldOptionModal = ({
         </DialogHeader>
         <Separator className="mb-4" />
         <CustomOptionForm
-          onSubmit={(data) => handleSubmit(data)}
+          onSubmit={(data) =>
+            handleSubmitLocal && typeof handleSubmitLocal === 'function'
+              ? handleSubmitLocalData(data)
+              : handleSubmit(data)
+          }
           submitBtnLabel="Save"
           cancelButton={
             <Button className={cn(secondaryBtnStyles)} onClick={closeModal}>
