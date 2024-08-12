@@ -127,7 +127,7 @@ export const CreateProjectModal = ({ projectDetails }: Props) => {
   };
 
   return (
-    <Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal}>
+    <Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
       <DialogTrigger
         onClick={openModal}
         className={cn(
@@ -155,6 +155,7 @@ export const CreateProjectModal = ({ projectDetails }: Props) => {
             field="size"
             dbTableName="sizes"
             items={sizes}
+            setItems={setSizes}
             hiddenDescription
             embeddedCreateOptionEle={
               <CreateCustomFieldOptionModal
@@ -173,6 +174,7 @@ export const CreateProjectModal = ({ projectDetails }: Props) => {
             field="priority"
             dbTableName="priorities"
             items={priorities}
+            setItems={setPriorities}
             hiddenDescription
             embeddedCreateOptionEle={
               <CreateCustomFieldOptionModal
@@ -191,6 +193,7 @@ export const CreateProjectModal = ({ projectDetails }: Props) => {
             field="status"
             dbTableName="statuses"
             items={statuses}
+            setItems={setStatuses}
             hiddenDescription
             embeddedCreateOptionEle={
               <CreateCustomFieldOptionModal

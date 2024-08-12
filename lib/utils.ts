@@ -50,3 +50,37 @@ export function getAllKeysExceptLabelKey(
 
   return Array.from(keysSet);
 }
+
+type Identifiable = {
+  id: string;
+  [key: string]: any;
+};
+
+export function compareArrays<T extends Identifiable>(
+  arr1: T[],
+  arr2: T[]
+): { isChanged: boolean; data: T[] } {
+  const changedItems: T[] = [];
+  const map2 = new Map(arr2.map((item) => [item.id, item]));
+
+  for (const item1 of arr1) {
+    const item2 = map2.get(item1.id);
+    if (!item2) {
+      continue;
+    }
+
+    for (const key in item1) {
+      if (item1[key] !== item2[key]) {
+        changedItems.push(item2);
+        break;
+      }
+    }
+
+    map2.delete(item1.id);
+  }
+
+  const newItems = Array.from(map2.values());
+  changedItems.push(...newItems);
+
+  return { isChanged: changedItems.length > 0, data: changedItems };
+}
