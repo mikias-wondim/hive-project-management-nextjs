@@ -73,7 +73,6 @@ export const CustomFieldOptions = ({
   };
 
   const handleUpdateOption = (option: ICustomFieldData) => {
-    console.log(option);
     setOptions?.((prevOptions) =>
       prevOptions.map((foundOption) =>
         foundOption.id === option.id ? option : foundOption
