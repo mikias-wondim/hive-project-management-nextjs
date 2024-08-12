@@ -38,21 +38,19 @@ import {
 
 interface Props {
   field: string;
-  dbTableName: CustomFieldDBTableName;
   title?: string;
-  items: ICustomFieldData[];
+  options: ICustomFieldData[];
   hiddenDescription?: boolean;
-  setItems?: Dispatch<SetStateAction<ICustomFieldData[]>>;
+  setOptions?: Dispatch<SetStateAction<ICustomFieldData[]>>;
   embeddedCreateOptionEle?: ReactNode;
 }
 
 export const CustomFieldOptions = ({
   field,
-  dbTableName,
-  items,
+  options,
   title,
   hiddenDescription,
-  setItems,
+  setOptions,
   embeddedCreateOptionEle,
 }: Props) => {
   const searchParams = useSearchParams();
@@ -65,13 +63,28 @@ export const CustomFieldOptions = ({
     const { active, over } = event;
 
     if (active.id !== over?.id) {
-      setItems?.((prevItems) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over?.id);
+      setOptions?.((prevOptions) => {
+        const oldIndex = prevOptions.findIndex((item) => item.id === active.id);
+        const newIndex = prevOptions.findIndex((item) => item.id === over?.id);
 
-        return arrayMove(items, oldIndex, newIndex);
+        return arrayMove(prevOptions, oldIndex, newIndex);
       });
     }
+  };
+
+  const handleUpdateOption = (option: ICustomFieldData) => {
+    console.log(option);
+    setOptions?.((prevOptions) =>
+      prevOptions.map((foundOption) =>
+        foundOption.id === option.id ? option : foundOption
+      )
+    );
+    closeModal();
+    setOptionId(undefined);
+  };
+
+  const handleDeleteItem = (id: string) => {
+    setOptions?.((prevOptions) => prevOptions.filter((item) => item.id !== id));
   };
 
   useEffect(() => {
@@ -106,23 +119,21 @@ export const CustomFieldOptions = ({
               onDragEnd={onDragEnd}
             >
               <SortableContext
-                items={items}
+                items={options}
                 strategy={verticalListSortingStrategy}
               >
-                {items.map((item, i) => (
+                {options.map((item, i) => (
                   <DropContainer
                     key={item.id}
                     field={field}
-                    dbTableName={dbTableName}
                     item={item}
-                    optionId={optionId}
+                    selectedOptionId={optionId}
                     hiddenDescription={hiddenDescription}
                     closeModal={closeModal}
                     openModal={openModal}
                     setOptionId={setOptionId}
-                    deleteItem={(id) =>
-                      setItems?.(items.filter((option) => id !== option.id))
-                    }
+                    deleteOption={handleDeleteItem}
+                    updateOption={handleUpdateOption}
                   />
                 ))}
               </SortableContext>
@@ -136,26 +147,26 @@ export const CustomFieldOptions = ({
 
 interface DropContainerProps {
   field: string;
-  dbTableName: CustomFieldDBTableName;
   item: ICustomFieldData;
   hiddenDescription?: boolean;
-  optionId: string | undefined;
-  deleteItem?: (id: string) => void;
+  selectedOptionId: string | undefined;
+  deleteOption?: (id: string) => void;
   openModal: () => void;
   closeModal: () => void;
   setOptionId: Dispatch<SetStateAction<string | undefined>>;
+  updateOption?: (option: ICustomFieldData) => void;
 }
 
 const DropContainer = ({
   field,
-  dbTableName,
   item,
-  optionId,
+  selectedOptionId,
   hiddenDescription,
   closeModal,
   openModal,
   setOptionId,
-  deleteItem,
+  deleteOption,
+  updateOption,
 }: DropContainerProps) => {
   const pathname = usePathname();
   const router = useRouter();
@@ -169,14 +180,14 @@ const DropContainer = ({
   };
 
   const handleUpdateOption = (item: ICustomFieldData) => {
-    console.log('update', dbTableName, 'with', item);
-    closeModal();
-    setOptionId(undefined);
+    if (typeof updateOption === 'function') {
+      updateOption(item);
+    }
   };
 
   const handleDeleteItem = (id: string) => {
-    if (typeof deleteItem === 'function') {
-      deleteItem(id);
+    if (typeof deleteOption === 'function') {
+      deleteOption(id);
     }
   };
 
@@ -223,7 +234,7 @@ const DropContainer = ({
         </DropdownMenu>
       </div>
 
-      {item.id === optionId && (
+      {item.id === selectedOptionId && (
         <DialogContent className="max-w-96 max-h-[100vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Update {field}</DialogTitle>
@@ -233,7 +244,7 @@ const DropContainer = ({
             color={item.color}
             description={item.description}
             label={item.label}
-            onSubmit={(data) => handleUpdateOption({ ...data, id: '' })}
+            onSubmit={(data) => handleUpdateOption({ ...data, id: item.id })}
             submitBtnLabel="Update option"
             cancelButton={
               <Button

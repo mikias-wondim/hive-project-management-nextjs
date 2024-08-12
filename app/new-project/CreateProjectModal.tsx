@@ -73,25 +73,6 @@ export const CreateProjectModal = ({ projectDetails }: Props) => {
     }
   };
 
-  const handleRemoveOptionItem = (
-    id: string,
-    state: CustomFieldDBTableName
-  ) => {
-    switch (state) {
-      case 'sizes':
-        setSizes(sizes.filter((item) => item.id !== id));
-        break;
-      case 'priorities':
-        setPriorities(priorities.filter((item) => item.id !== id));
-        break;
-      case 'statuses':
-        setStatuses(statuses.filter((item) => item.id !== id));
-        break;
-      default:
-        break;
-    }
-  };
-
   const handleAddNewLabelItem = (data: ICustomFieldData) => {
     setLabels([...labels, data]);
     setShowNewLabelCard(false);
@@ -153,59 +134,48 @@ export const CreateProjectModal = ({ projectDetails }: Props) => {
           <CustomFieldOptions
             title="Sizes"
             field="size"
-            dbTableName="sizes"
-            items={sizes}
-            setItems={setSizes}
+            options={sizes}
+            setOptions={setSizes}
             hiddenDescription
             embeddedCreateOptionEle={
               <CreateCustomFieldOptionModal
                 title="Create new size option"
-                dbTableName="sizes"
-                handleSubmitLocal={(data) =>
-                  handleAddNewOptionItem(data, 'sizes')
-                }
+                handleSubmit={(data) => handleAddNewOptionItem(data, 'sizes')}
                 triggerBtn={AddNewOptionBtn}
               />
             }
-            deleteLocalItem={(id) => handleRemoveOptionItem(id, 'sizes')}
           />
           <CustomFieldOptions
             title="Priorities"
             field="priority"
-            dbTableName="priorities"
-            items={priorities}
-            setItems={setPriorities}
+            options={priorities}
+            setOptions={setPriorities}
             hiddenDescription
             embeddedCreateOptionEle={
               <CreateCustomFieldOptionModal
                 title="Create new priority option"
-                dbTableName="priorities"
-                handleSubmitLocal={(data) =>
+                handleSubmit={(data) =>
                   handleAddNewOptionItem(data, 'priorities')
                 }
                 triggerBtn={AddNewOptionBtn}
               />
             }
-            deleteLocalItem={(id) => handleRemoveOptionItem(id, 'priorities')}
           />
           <CustomFieldOptions
             title="Columns"
             field="status"
-            dbTableName="statuses"
-            items={statuses}
-            setItems={setStatuses}
+            options={statuses}
+            setOptions={setStatuses}
             hiddenDescription
             embeddedCreateOptionEle={
               <CreateCustomFieldOptionModal
                 title="Create new status option"
-                dbTableName="statuses"
-                handleSubmitLocal={(data) =>
+                handleSubmit={(data) =>
                   handleAddNewOptionItem(data, 'statuses')
                 }
                 triggerBtn={AddNewOptionBtn}
               />
             }
-            deleteLocalItem={(id) => handleRemoveOptionItem(id, 'statuses')}
           />
           <div>
             <div className="flex justify-between items-center">

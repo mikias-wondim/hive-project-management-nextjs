@@ -11,30 +11,26 @@ interface Props {
   items: ICustomFieldData[];
 }
 
-export const Priorities = ({ items }: Props) => {
-  const [priorities, setPriorities] = useState(items);
+export const Sizes = ({ items }: Props) => {
+  const [sizes, setSizes] = useState(items);
 
   const handleSaveData = () => {
-    console.log('save data', priorities);
+    console.log('save data', sizes);
   };
 
   return (
     <div>
       <div className="flex justify-end mb-2">
         <CreateCustomFieldOptionModal
-          title="Create new priority"
-          triggerLabel="Create new priority option"
+          title="Create new size"
+          triggerLabel="Create new size option"
           handleSubmit={(data) =>
-            setPriorities((items) => [...items, { id: uid(), ...data }])
+            setSizes((items) => [...items, { id: uid(), ...data }])
           }
         />
       </div>
 
-      <CustomFieldOptions
-        field="priority"
-        options={priorities}
-        setOptions={setPriorities}
-      />
+      <CustomFieldOptions field="size" options={sizes} setOptions={setSizes} />
 
       <div className="flex justify-end py-4">
         <Button onClick={handleSaveData} className={cn(primaryBtnStyles)}>

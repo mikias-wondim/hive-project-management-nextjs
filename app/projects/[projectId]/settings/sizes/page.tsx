@@ -1,14 +1,11 @@
-import { CustomFieldOptions } from '@/components/CustomFieldOptions';
-import { SettingsLayout } from '../SettingsLayout';
-import { CreateNewSize } from './CreateNewSize';
-import { Options } from './Options';
 import { sizes } from '@/mock-data';
+import { SettingsLayout } from '../SettingsLayout';
+import { Sizes } from './Sizes';
 
 const SizesPage = () => {
   return (
     <SettingsLayout title="Sizes settings">
-      <CreateNewSize />
-      <Options items={sizes} />
+      <Sizes items={sizes} />
     </SettingsLayout>
   );
 };

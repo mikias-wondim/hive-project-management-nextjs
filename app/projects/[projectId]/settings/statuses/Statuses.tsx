@@ -11,29 +11,29 @@ interface Props {
   items: ICustomFieldData[];
 }
 
-export const Priorities = ({ items }: Props) => {
-  const [priorities, setPriorities] = useState(items);
+export const Statuses = ({ items }: Props) => {
+  const [statuses, setStatuses] = useState(items);
 
   const handleSaveData = () => {
-    console.log('save data', priorities);
+    console.log('save data', statuses);
   };
 
   return (
     <div>
       <div className="flex justify-end mb-2">
         <CreateCustomFieldOptionModal
-          title="Create new priority"
-          triggerLabel="Create new priority option"
+          title="Create new status"
+          triggerLabel="Create new status option"
           handleSubmit={(data) =>
-            setPriorities((items) => [...items, { id: uid(), ...data }])
+            setStatuses((items) => [...items, { id: uid(), ...data }])
           }
         />
       </div>
 
       <CustomFieldOptions
-        field="priority"
-        options={priorities}
-        setOptions={setPriorities}
+        field="status"
+        options={statuses}
+        setOptions={setStatuses}
       />
 
       <div className="flex justify-end py-4">
