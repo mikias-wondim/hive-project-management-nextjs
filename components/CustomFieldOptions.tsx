@@ -9,7 +9,7 @@ import {
 import { grayFieldColor } from '@/consts/colors';
 import { useModalDialog } from '@/hooks/useModalDialog';
 import { cn } from '@/lib/utils';
-import { closestCenter, DndContext, DragEndEvent } from '@dnd-kit/core';
+import { closestCenter, DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
@@ -35,6 +35,25 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
+import { createPortal } from 'react-dom';
+import { CustomFieldOptionOverlay } from './DragOverlays/CustomFieldOptionOverlay';
+
+// const Overlay = () => {
+//   if(typeof window )
+//   {createPortal(
+//     <DragOverlay className="border bg-white dark:bg-slate-950">
+//       {activeOption &&
+//         <CustomFieldOptionOverlay
+//           label={activeOption.label}
+//           color={activeOption.color}
+//           description={activeOption.description}
+//           hiddenDescription={hiddenDescription}
+//         />
+//       }
+//     </DragOverlay>,
+//     document && document?.body
+//   )}
+// }
 
 interface Props {
   field: string;
@@ -58,8 +77,16 @@ export const CustomFieldOptions = ({
   const router = useRouter();
   const { isModalOpen, openModal, closeModal } = useModalDialog();
   const [optionId, setOptionId] = useState<string | undefined>(undefined);
+  const [activeOption, setActiveOption] = useState<ICustomFieldData | null>(null);
+
+  const onDragStart = (event: DragStartEvent) => {
+    if (event.active.data.current?.type === 'option') {
+      setActiveOption(event.active.data.current?.option);
+    }
+  }
 
   const onDragEnd = (event: DragEndEvent) => {
+    setActiveOption(null);
     const { active, over } = event;
 
     if (active.id !== over?.id) {
@@ -116,13 +143,14 @@ export const CustomFieldOptions = ({
             <DndContext
               collisionDetection={closestCenter}
               onDragEnd={onDragEnd}
+              onDragStart={onDragStart}
             >
               <SortableContext
                 items={options}
                 strategy={verticalListSortingStrategy}
               >
                 {options.map((item, i) => (
-                  <DropContainer
+                  <OptionItem
                     key={item.id}
                     field={field}
                     item={item}
@@ -136,6 +164,20 @@ export const CustomFieldOptions = ({
                   />
                 ))}
               </SortableContext>
+
+              {typeof window === "object" && createPortal(
+                <DragOverlay className="border bg-white dark:bg-slate-950">
+                  {activeOption &&
+                    <CustomFieldOptionOverlay
+                      label={activeOption.label}
+                      color={activeOption.color}
+                      description={activeOption.description}
+                      hiddenDescription={hiddenDescription}
+                    />
+                  }
+                </DragOverlay>,
+                document.body
+              )}
             </DndContext>
           </div>
         </div>
@@ -156,22 +198,27 @@ interface DropContainerProps {
   updateOption?: (option: ICustomFieldData) => void;
 }
 
-const DropContainer = ({
-  field,
-  item,
-  selectedOptionId,
-  hiddenDescription,
-  closeModal,
-  openModal,
-  setOptionId,
-  deleteOption,
-  updateOption,
-}: DropContainerProps) => {
+const OptionItem = (props: DropContainerProps) => {
+  const {
+    field,
+    item,
+    selectedOptionId,
+    hiddenDescription,
+    closeModal,
+    openModal,
+    setOptionId,
+    deleteOption,
+    updateOption,
+  } = props;
   const pathname = usePathname();
   const router = useRouter();
-  const { attributes, listeners, setNodeRef, transform, transition } =
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({
       id: item.id,
+      data: {
+        type: "option",
+        option: item
+      }
     });
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -190,11 +237,20 @@ const DropContainer = ({
     }
   };
 
+  if (isDragging) {
+    return <div
+      ref={setNodeRef}
+      style={style}
+      className="border bg-white dark:bg-slate-950 h-[60px]"
+    />
+
+  }
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="border bg-white dark:bg-slate-950"
+      className="border bg-white dark:bg-slate-950 h-[60px]"
     >
       <div className="flex justify-between items-center p-4">
         <div className="flex gap-4 items-center">
