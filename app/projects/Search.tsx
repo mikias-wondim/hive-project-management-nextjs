@@ -6,18 +6,23 @@ import Link from 'next/link';
 import React from 'react';
 import { successBtnStyles } from '../commonStyles';
 
-interface Props {
-  placeholderText?: string;
+interface SearchAndButtonProps {
+  placeholderText: string;
+  onSearch?: (term: string) => void;
 }
 
-const SearchAndButton = ({ placeholderText }: Props) => {
+const SearchAndButton = ({
+  placeholderText,
+  onSearch,
+}: SearchAndButtonProps) => {
   return (
     <div className="flex items-center py-4">
       <div className="flex-grow mr-2">
         <Input
           type="text"
-          placeholder={placeholderText || 'Search all projects'}
+          placeholder={placeholderText}
           className="w-full p-2 rounded"
+          onChange={(e) => onSearch?.(e.target.value)}
         />
       </div>
       <Link href="/new-project">

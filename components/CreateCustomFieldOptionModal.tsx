@@ -11,9 +11,8 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { useModalDialog } from '@/hooks/useModalDialog';
 import { cn } from '@/lib/utils';
-import { v4 as uid } from 'uuid';
-import { CustomOptionForm } from './CustomOptionForm';
 import React, { ReactElement } from 'react';
+import { CustomOptionForm } from './CustomOptionForm';
 
 interface Props {
   title: string;

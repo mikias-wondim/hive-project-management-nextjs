@@ -14,7 +14,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { labelColors } from '@/consts/colors';
-import { v4 as uid } from 'uuid';
 
 const defaultColor = labelColors[1];
 
@@ -23,6 +22,7 @@ interface Props {
   data?: ICustomFieldData;
   save?: (data: ICustomFieldData) => void;
   cancel?: () => void;
+  isSubmitting?: boolean;
 }
 
 export const CreateOrEditLabelForm = ({
@@ -30,6 +30,7 @@ export const CreateOrEditLabelForm = ({
   data,
   cancel,
   save,
+  isSubmitting,
 }: Props) => {
   const [labelName, setLabelName] = useState(data?.label || '');
   const [description, setDescription] = useState(data?.description || '');
@@ -119,12 +120,23 @@ export const CreateOrEditLabelForm = ({
           </Button>
           <Button
             onClick={() =>
-              save?.({ id: uid(), label: labelName, description, color })
+              save?.({
+                id: mode === 'edit' ? data?.id! : crypto.randomUUID(),
+                label: labelName,
+                description,
+                color,
+              })
             }
             className={cn(successBtnStyles)}
-            disabled={!isValidHexColor(color) || !labelName.trim()}
+            disabled={
+              !isValidHexColor(color) || !labelName.trim() || isSubmitting
+            }
           >
-            {mode === 'edit' ? 'Update' : 'Create'} label
+            {isSubmitting
+              ? 'Submitting...'
+              : mode === 'edit'
+              ? 'Update label'
+              : 'Create label'}
           </Button>
         </div>
       </div>

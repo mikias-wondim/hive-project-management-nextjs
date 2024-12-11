@@ -9,42 +9,27 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { cn } from '@/lib/utils';
-import { projects, tasks } from '@/mock-data';
-import { Plus } from 'lucide-react';
-import { ColumnLabelColor } from './ColumnLabelColor';
-import { ColumnMenuOptions } from './ColumnMenuOptions';
-import { TaskItem } from './TaskItem';
 import { useModalDialog } from '@/hooks/useModalDialog';
+import { cn } from '@/lib/utils';
+import { projects } from '@/mock-data';
 import {
-  arrayMove,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import {
-  closestCenter,
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import { useState } from 'react';
-import { createPortal } from 'react-dom';
+import { Plus } from 'lucide-react';
+import { ColumnLabelColor } from './ColumnLabelColor';
+import { ColumnMenuOptions } from './ColumnMenuOptions';
+import { TaskItem } from './TaskItem';
 
 interface Props {
   column: IStatus;
+  tasks: ITask[];
+  projectName: string;
 }
 
-export const ColumnContainer = ({ column }: Props) => {
-  const [items, setItems] = useState<ITask[]>(
-    tasks.filter((task) => task.status_id === column.id)
-  );
-  const [activeTask, setActiveTask] = useState<ITask | null>(null);
+export const ColumnContainer = ({ column, tasks, projectName }: Props) => {
   const { openModal, closeModal, isModalOpen } = useModalDialog();
   const {
     attributes,
@@ -64,37 +49,6 @@ export const ColumnContainer = ({ column }: Props) => {
     transform: CSS.Translate.toString(transform),
     transition,
   };
-
-  const touchSensor = useSensor(PointerSensor, {
-    activationConstraint: {
-      distance: 1,
-    },
-  });
-
-  const sensors = useSensors(touchSensor);
-
-  const onDragStart = (event: DragStartEvent) => {
-    if (event.active.data.current?.type === 'task') {
-      setActiveTask(event.active.data.current?.task);
-    }
-  };
-
-  const onDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (active.id !== over?.id) {
-      setItems((prevItems) => {
-        const oldIndex = prevItems.findIndex((item) => item.id === active.id);
-        const newIndex = prevItems.findIndex((item) => item.id === over?.id);
-
-        return arrayMove(prevItems, oldIndex, newIndex);
-      });
-    }
-  };
-
-  const projectName = projects.filter(
-    (project) => project.id === column.project_id
-  )[0].name;
 
   const handleAddItem = () => {
     closeModal();
@@ -122,7 +76,7 @@ export const ColumnContainer = ({ column }: Props) => {
             <ColumnLabelColor color={column.color} />
             <h1 className="text-sm font-bold">{column.label}</h1>
             <div className="px-2 h-4 dark:text-gray-400 bg-gray-300 dark:bg-gray-700 rounded-full flex justify-center items-center text-[10px]">
-              {items.length} / {column.limit}
+              {tasks.length} / {column.limit}
             </div>
           </div>
           <ColumnMenuOptions column={column} />
@@ -134,29 +88,13 @@ export const ColumnContainer = ({ column }: Props) => {
       </div>
 
       <div className=" flex flex-col h-minus-230 ">
-        <DndContext
-          onDragEnd={onDragEnd}
-          onDragStart={onDragStart}
-          collisionDetection={closestCenter}
-          sensors={sensors}
-        >
-          <SortableContext items={items} strategy={verticalListSortingStrategy}>
-            <div className="flex-grow overflow-y-auto space-y-2 py-2">
-              {items.map((item) => (
-                <TaskItem key={item.id} item={item} projectName={projectName} />
-              ))}
-            </div>
-          </SortableContext>
-
-          {createPortal(
-            <DragOverlay>
-              {activeTask && (
-                <TaskItem item={activeTask} projectName={projectName} />
-              )}
-            </DragOverlay>,
-            document?.body
-          )}
-        </DndContext>
+        <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
+          <div className="flex-grow overflow-y-auto space-y-2 py-2">
+            {tasks.map((item) => (
+              <TaskItem key={item.id} item={item} projectName={projectName} />
+            ))}
+          </div>
+        </SortableContext>
 
         <Sheet
           open={isModalOpen}

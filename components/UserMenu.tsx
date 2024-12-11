@@ -1,12 +1,11 @@
+'use client';
 import {
   CircleUser,
   CreditCard,
   LogOut,
   Plus,
-  User,
-  UserPlus,
+  User as UserIcon,
 } from 'lucide-react';
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,63 +15,105 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { UserAvatar } from './Avatar';
 import Link from 'next/link';
 import { Button } from './ui/button';
+import Image from 'next/image';
+import { auth } from '@/utils/auth';
+import { useRouter } from 'next/navigation';
+import { useToast } from './ui/use-toast';
+import type { User } from '@supabase/supabase-js';
 
-export function UserMenu() {
+interface UserMenuProps {
+  user: User;
+}
+
+export function UserMenu({ user }: UserMenuProps) {
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    try {
+      await auth.signOut();
+      router.push('/login');
+      router.refresh();
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to sign out. Please try again.',
+      });
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="secondary"
+          variant="ghost"
           size="icon"
-          className="rounded-full bg-gray-100 dark:bg-gray-700"
+          className="relative h-9 w-9 rounded-full border bg-background"
         >
-          <CircleUser className="h-5 w-5" />
-          <span className="sr-only">Toggle user menu</span>
+          {user.user_metadata.avatar_url ? (
+            <Image
+              src={user.user_metadata.avatar_url}
+              alt={user.email || ''}
+              fill
+              className="rounded-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <CircleUser className="h-5 w-5" />
+          )}
+          <span className="sr-only">Open user menu</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel className="pb-0">John Doe</DropdownMenuLabel>
-        <div className="dark:text-gray-300 text-xs px-2 pb-2">
-          (john@projx.com)
-        </div>
 
+      <DropdownMenuContent className="w-56" align="end">
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">
+              {user.user_metadata.full_name || user.email}
+            </p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user.email}
+            </p>
+          </div>
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
         <DropdownMenuGroup>
-          <Link href="/profile">
-            <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" />
-              <span>Your Profile</span>
-            </DropdownMenuItem>
-          </Link>
+          <DropdownMenuItem asChild>
+            <Link href="/profile" className="w-full cursor-pointer">
+              <UserIcon className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </Link>
+          </DropdownMenuItem>
 
-          <Link href="/projects">
-            <DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/projects" className="w-full cursor-pointer">
               <CreditCard className="mr-2 h-4 w-4" />
-              <span>Your Projects</span>
-            </DropdownMenuItem>
-          </Link>
+              <span>Projects</span>
+            </Link>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuGroup>
-          <Link href="/new-project">
-            <DropdownMenuItem>
-              <Plus className="mr-2 h-4 w-4" />
-              <span>New Project</span>
-            </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/new-project" className="w-full cursor-pointer">
+            <Plus className="mr-2 h-4 w-4" />
+            <span>New Project</span>
           </Link>
-        </DropdownMenuGroup>
+        </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
+          onSelect={handleSignOut}
+        >
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+          <span>Sign out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

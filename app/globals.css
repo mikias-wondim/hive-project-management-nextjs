@@ -172,3 +172,7 @@ h6 {
   margin-top: -10px !important;
   text-align: right !important;
 }
+
+body[style*='overflow: hidden'] {
+  padding-right: var(--removed-body-scroll-bar-size, 0px);
+}

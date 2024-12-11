@@ -1,69 +1,124 @@
 'use client';
 import React from 'react';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import Image from 'next/image';
+import { useTheme } from 'next-themes';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { createClient } from '@/utils/supabase/client';
+import type { User } from '@supabase/supabase-js';
+
+const features = [
+  'Intuitive Kanban boards',
+  'Real-time collaboration',
+  'Custom workflows',
+  'Advanced task tracking',
+];
 
 const LandingPage: React.FC = () => {
-  //   const [darkMode, setDarkMode] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const supabase = createClient();
 
-  //   const toggleDarkMode = () => {
-  //     setDarkMode(!darkMode);
-  //     document.documentElement.classList.toggle('dark', !darkMode);
-  //   };
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (isLoading) {
+    return null; // or a loading spinner
+  }
 
   return (
-    <div>
-      <div className="h-minus-80">
-        <div className="relative isolate overflow-hidden px-6 pt-16 lg:flex lg:gap-x-20 lg:px-24 lg:pt-0 h-full">
-          <svg
-            viewBox="0 0 1024 1024"
-            aria-hidden="true"
-            className="absolute left-1/2 top-1/2 -z-10 h-[200rem] w-[200rem] -translate-y-1/2 [mask-image:radial-gradient(closest-side,white,transparent)] sm:left-full sm:-ml-80 lg:left-1/2 lg:ml-0 lg:-translate-x-1/2 lg:translate-y-[-100px]"
-          >
-            <circle
-              r={512}
-              cx={512}
-              cy={512}
-              fill="url(#759c1415-0410-454c-8f7c-9a820de03641)"
-              fillOpacity="0.5"
-            />
-            <defs>
-              <radialGradient id="759c1415-0410-454c-8f7c-9a820de03641">
-                <stop stopColor="#7775D6" />
-                <stop offset={1} stopColor="#E935C1" />
-              </radialGradient>
-            </defs>
-          </svg>
+    <div className="min-h-screen bg-gradient-to-b from-background to-background/95">
+      {/* Hero Section */}
+      <div className="container pt-32 pb-20">
+        {/* Content */}
+        <div className="max-w-[800px] mx-auto text-center space-y-8 mb-20">
+          <div className="space-y-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
+              Organize your work,
+              <br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+                One task at a time
+              </span>
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-[600px] mx-auto">
+              Goes beyond basic to-do lists, offering intuitive tools for
+              prioritizing and managing projects and tasks with ease.
+            </p>
+          </div>
 
-          <div className="flex flex-col lg:flex-row gap-10">
-            <div className="flex flex-grow flex-col justify-center items-start text-center lg:flex-auto lg:py-32 lg:text-left ">
-              <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl lg:text-6xl">
-                Streamline Your Workflow,
-                <br />
-                One Task at a Time.
-              </h2>
-              <p className="mt-6 text-lg leading-8 text-gray-300">
-                Your ultimate project management tool, designed to help teams
-                achieve their goals
-              </p>
-              <div className="mt-10 flex items-center justify-center gap-x-6 lg:justify-start">
-                <a
-                  href="#"
-                  className="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                >
-                  Get started
-                </a>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {user ? (
+              <Button size="lg" asChild>
+                <Link href="/projects" className="gap-2">
+                  View Projects <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button size="lg" asChild>
+                  <Link href="/create-account" className="gap-2">
+                    Get Started <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link href="/login">Sign in</Link>
+                </Button>
+              </>
+            )}
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4 pt-4 max-w-[600px] mx-auto">
+            {features.map((feature) => (
+              <div key={feature} className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-primary" />
+                <span className="text-muted-foreground">{feature}</span>
               </div>
-            </div>
+            ))}
+          </div>
+        </div>
 
-            <div className="mt-16 h-80 lg:mt-8 w-[300px]">
-              <img
-                alt="App screenshot"
-                src="https://tailwindui.com/img/component-images/dark-project-app-screenshot.png"
+        {/* App Screenshot with Fade Effect */}
+        <div className="relative w-full max-w-[1200px] mx-auto mt-20">
+          <div className="relative">
+            <div className="relative bg-background/95 backdrop-blur rounded-lg shadow-2xl">
+              <Image
+                src={
+                  resolvedTheme === 'dark'
+                    ? '/projex-dark.png'
+                    : '/projex-light.png'
+                }
+                alt="App preview"
                 width={1824}
                 height={1080}
-                className="left-0 top-0 max-w-none rounded-md bg-white/5 ring-1 ring-white/10"
+                className="rounded-lg w-full"
+                priority
               />
+              <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background"></div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Background Gradient Effect */}
+      <div className="fixed inset-0 -z-10 h-full w-full bg-background">
+        <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-primary/5 to-background"></div>
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="h-[40rem] w-[40rem] rounded-full bg-primary/5 blur-3xl"></div>
         </div>
       </div>
     </div>

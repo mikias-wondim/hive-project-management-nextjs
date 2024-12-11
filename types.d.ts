@@ -26,6 +26,7 @@ interface IUser {
   created_at: Date;
   updated_at: Date;
   links: IUserLink[];
+  provider: 'google' | 'github' | 'email';
 }
 
 interface IProject {
@@ -54,9 +55,9 @@ interface IField {
   label: string;
   description: string;
   color: string;
-  created_at: Date;
-  updated_at: Date;
-  project_id: string;
+  created_at?: Date;
+  updated_at?: Date;
+  project_id?: string;
 }
 
 interface IStatus extends IField {
@@ -65,8 +66,12 @@ interface IStatus extends IField {
 }
 
 interface ILabel extends IField {}
-interface IPriority extends IField {}
-interface ISize extends IField {}
+interface IPriority extends IField {
+  order: number;
+}
+interface ISize extends IField {
+  order: number;
+}
 
 interface ITask {
   id: string;
@@ -144,3 +149,13 @@ interface ICustomFieldData {
 //  - tasks
 //  - comments
 //  - activities
+
+type ProjectWithOptions = {
+  name: string;
+  description: string;
+  readme: string;
+  statuses?: Omit<IStatus, 'created_at' | 'updated_at'>[];
+  labels?: Omit<ILabel, 'created_at' | 'updated_at'>[];
+  priorities?: Omit<IPriority, 'created_at' | 'updated_at'>[];
+  sizes?: Omit<ISize, 'created_at' | 'updated_at'>[];
+};

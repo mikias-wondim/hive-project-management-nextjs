@@ -1,37 +1,31 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import React from 'react';
+import { users, type IUser } from '@/utils/users';
+import { createClient } from '@/utils/supabase/server';
+import { notFound } from 'next/navigation';
+import { ProfileView } from './ProfileView';
 
-const ProfileViewingPage = () => {
-  return (
-    <div className="w-[24rem] md:w-[36rem]  mx-auto px-6 pb-4">
-      <h1 className="text-2xl py-6">John Doe</h1>
-      <Avatar className="w-48 h-48">
-        <AvatarImage src="" />
-        <AvatarFallback>CN</AvatarFallback>
-      </Avatar>
+async function getUser(profileId: string): Promise<IUser> {
+  try {
+    const user = await users.getUser(profileId);
+    if (!user) throw new Error('User not found');
+    return user;
+  } catch (error) {
+    notFound();
+  }
+}
 
-      <div>
-        <h1 className="text-lg pt-6 pb-2 font-bold">Bio</h1>
-        <p className="text-lg text-muted-foreground">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex quia
-          provident nisi eaque, voluptas quibusdam rerum libero commodi, sit
-          repellat soluta enim doloremque ut eum consequuntur aliquam. Expedita,
-          cupiditate cum.
-        </p>
-      </div>
+export default async function ProfileViewingPage({
+  params,
+}: {
+  params: Promise<{ profileId: string }>;
+}) {
+  const { profileId } = await params;
 
-      <div>
-        <h1 className="text-lg pt-6 pb-2 font-bold">URLs</h1>
-        <a
-          href="https://example.com/username"
-          target="_blank"
-          className="text-blue-600"
-        >
-          https://example.com/username
-        </a>
-      </div>
-    </div>
-  );
-};
+  const user = await getUser(profileId);
+  const supabase = await createClient();
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
+  const isOwnProfile = currentUser?.id === user.id;
 
-export default ProfileViewingPage;
+  return <ProfileView user={user} isOwnProfile={isOwnProfile} />;
+}

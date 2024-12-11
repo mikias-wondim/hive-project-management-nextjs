@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import React, { useState } from 'react';
-import { statuses } from '@/mock-data';
+import { statuses, tasks as items, projects } from '@/mock-data';
 import { cn } from '@/lib/utils';
 import { secondaryBtnStyles } from '@/app/commonStyles';
 import { CreateCustomFieldOptionModal } from '@/components/CreateCustomFieldOptionModal';
@@ -11,6 +11,7 @@ import {
   closestCenter,
   DndContext,
   DragEndEvent,
+  DragOverEvent,
   DragOverlay,
   DragStartEvent,
   PointerSensor,
@@ -24,10 +25,26 @@ import {
 } from '@dnd-kit/sortable';
 import { createPortal } from 'react-dom';
 import { v4 as uid } from 'uuid';
+import { useParams } from 'next/navigation';
+import { TaskItem } from './TaskItem';
 
-export const Board: React.FC = () => {
+interface Props {
+  projectId: string;
+  projectName: string;
+  statuses: IStatus[];
+}
+
+export const Board: React.FC<Props> = ({
+  projectId,
+  projectName,
+  statuses,
+}) => {
   const [columns, setColumns] = useState(statuses);
+
+  const [tasks, setTasks] = useState<ITask[]>([]);
   const [activeColumn, setActiveColumn] = useState<IStatus | null>(null);
+  const [activeTask, setActiveTask] = useState<ITask | null>(null);
+
   const touchSensor = useSensor(PointerSensor, {
     activationConstraint: {
       distance: 1,
@@ -39,20 +56,76 @@ export const Board: React.FC = () => {
   const onDragStart = (event: DragStartEvent) => {
     if (event.active.data.current?.type === 'column') {
       setActiveColumn(event.active.data.current?.column);
+      return;
+    }
+
+    if (event.active.data.current?.type === 'task') {
+      setActiveTask(event.active.data.current?.task);
+      return;
     }
   };
 
   const onDragEnd = (event: DragEndEvent) => {
+    setActiveColumn(null);
+    setActiveTask(null);
     const { active, over } = event;
 
-    if (active.id !== over?.id) {
-      setColumns?.((prevOptions) => {
-        const oldIndex = prevOptions.findIndex((item) => item.id === active.id);
-        const newIndex = prevOptions.findIndex((item) => item.id === over?.id);
+    if (!over) return;
 
-        return arrayMove(prevOptions, oldIndex, newIndex);
+    if (active.id === over.id) return;
+
+    setColumns?.((prevColumns) => {
+      const activeColumnIndex = prevColumns.findIndex(
+        (item) => item.id === active.id
+      );
+      const overColumnIndex = prevColumns.findIndex(
+        (item) => item.id === over?.id
+      );
+
+      return arrayMove(prevColumns, activeColumnIndex, overColumnIndex);
+    });
+  };
+
+  const onDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+
+    if (!over) return;
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    if (activeId === overId) return;
+
+    const isActiveItemATask = active.data.current?.type === 'task';
+    const isOverItemATask = over.data.current?.type === 'task';
+
+    if (!isActiveItemATask) return;
+
+    if (isActiveItemATask && isOverItemATask) {
+      setTasks((prevTasks) => {
+        const activeIndex = prevTasks.findIndex((item) => item.id === activeId);
+        const overIndex = prevTasks.findIndex((item) => item.id === overId);
+
+        prevTasks[activeIndex].status_id = prevTasks[overIndex].status_id;
+
+        return arrayMove(prevTasks, activeIndex, overIndex);
       });
     }
+
+    const isOverAColumn = over.data.current?.type === 'column';
+
+    if (isActiveItemATask && isOverAColumn) {
+      setTasks((prevTasks) => {
+        const activeIndex = prevTasks.findIndex((item) => item.id === activeId);
+        prevTasks[activeIndex].status_id = overId as string;
+
+        return arrayMove(prevTasks, activeIndex, activeIndex);
+      });
+    }
+  };
+
+  const getColumnTasks = (statusId: string) => {
+    return tasks.filter((task) => task.status_id === statusId);
   };
 
   return (
@@ -60,6 +133,7 @@ export const Board: React.FC = () => {
       <DndContext
         onDragEnd={onDragEnd}
         onDragStart={onDragStart}
+        onDragOver={onDragOver}
         collisionDetection={closestCenter}
         sensors={sensors}
       >
@@ -69,17 +143,33 @@ export const Board: React.FC = () => {
         >
           <div className="flex space-x-4">
             {columns.map((column) => (
-              <ColumnContainer key={column.id} column={column} />
+              <ColumnContainer
+                key={column.id}
+                column={column}
+                tasks={getColumnTasks(column.id)}
+                projectName={projectName}
+              />
             ))}
           </div>
         </SortableContext>
 
-        {createPortal(
-          <DragOverlay>
-            {activeColumn && <ColumnContainer column={activeColumn} />}
-          </DragOverlay>,
-          document?.body
-        )}
+        {typeof window === 'object' &&
+          createPortal(
+            <DragOverlay>
+              {activeColumn && (
+                <ColumnContainer
+                  column={activeColumn}
+                  tasks={getColumnTasks(activeColumn.id)}
+                  projectName={projectName}
+                />
+              )}
+
+              {activeTask && (
+                <TaskItem item={activeTask} projectName={projectName} />
+              )}
+            </DragOverlay>,
+            document.body
+          )}
       </DndContext>
 
       <CreateCustomFieldOptionModal

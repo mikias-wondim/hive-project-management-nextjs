@@ -15,6 +15,7 @@ export const users: IUser[] = [
         url: 'https://linkedin.com/in/johndoe',
       },
     ],
+    provider: 'google',
   },
   {
     id: 'user-2',
@@ -32,6 +33,7 @@ export const users: IUser[] = [
         url: 'https://linkedin.com/in/janesmith',
       },
     ],
+    provider: 'google',
   },
 ];
 
@@ -176,6 +178,15 @@ export const sizes: ISize[] = [
   },
   {
     id: 'size-2',
+    label: 'M',
+    description: 'Medium tasks.',
+    color: 'hsl(212, 66%, 50%)',
+    created_at: new Date('2023-01-05T00:00:00Z'),
+    updated_at: new Date('2023-01-06T00:00:00Z'),
+    project_id: 'project-1',
+  },
+  {
+    id: 'size-3',
     label: 'L',
     description: 'Large tasks.',
     color: 'hsl(274, 100%, 76%)',

@@ -1,3 +1,5 @@
+'use client';
+
 import { CreateCustomFieldOptionModal } from '@/components/CreateCustomFieldOptionModal';
 import { CreateOrEditLabelForm } from '@/components/CreateOrEditLabelForm';
 import { CustomFieldOptions } from '@/components/CustomFieldOptions';
@@ -27,6 +29,10 @@ import { useState } from 'react';
 import { v4 as uid } from 'uuid';
 import { secondaryBtnStyles, successBtnStyles } from '../commonStyles';
 import { LabelList } from '../projects/[projectId]/settings/labels/LabelList';
+import { useRouter } from 'next/navigation';
+import { projects } from '@/utils/projects';
+import { useToast } from '@/components/ui/use-toast';
+import { createClient } from '@/utils/supabase/client';
 
 interface Props {
   projectDetails: {
@@ -38,14 +44,15 @@ interface Props {
 
 export const CreateProjectModal = ({ projectDetails }: Props) => {
   const { isModalOpen, openModal, closeModal } = useModalDialog();
+  const router = useRouter();
+  const { toast } = useToast();
   const [statuses, setStatuses] = useState(defaultStatuses);
   const [sizes, setSizes] = useState(defaultSizes);
   const [priorities, setPriorities] = useState(defaultPriorities);
   const [labels, setLabels] = useState(defaultLabels);
   const [showNewLabelCard, setShowNewLabelCard] = useState(false);
   const [skipDefaultOptions, setSkipDefaultOption] = useState(false);
-
-  const { name, description, readme } = projectDetails;
+  const [isCreating, setIsCreating] = useState(false);
 
   const AddNewOptionBtn = (
     <Button className={cn(secondaryBtnStyles, 'h-7 px-2 rounded-sm mr-2')}>
@@ -82,29 +89,53 @@ export const CreateProjectModal = ({ projectDetails }: Props) => {
     setLabels(labels.filter((item) => item.id !== id));
   };
 
-  const handleCreateProject = () => {
-    if (skipDefaultOptions) {
-      console.log(
-        'creating project without default options',
-        name,
-        description,
-        readme
-      );
-    } else {
-      console.log(
-        'creating project with default options',
-        name,
-        description,
-        readme,
-        sizes,
-        priorities,
-        statuses,
-        labels
-      );
-    }
+  const handleCreateProject = async () => {
+    try {
+      setIsCreating(true);
+      const supabase = createClient();
 
-    closeModal();
-    // redirect to kanban board
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const projectData = {
+        ...projectDetails,
+        ...(skipDefaultOptions
+          ? {}
+          : {
+              statuses,
+              sizes,
+              priorities,
+              labels,
+            }),
+      };
+
+      const project = await projects.createProject(
+        projectData as ProjectWithOptions,
+        user.id
+      );
+
+      toast({
+        title: 'Success',
+        description: 'Project created successfully',
+      });
+
+      closeModal();
+      router.push(`/projects/${project.id}`);
+    } catch (error) {
+      console.error('Error creating project:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to create project. Please try again.',
+      });
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -116,13 +147,13 @@ export const CreateProjectModal = ({ projectDetails }: Props) => {
           'w-28 flex items-center justify-center',
           'disabled:cursor-not-allowed disabled:opacity-40'
         )}
-        disabled={!name}
+        disabled={!projectDetails.name}
       >
         Continue
       </DialogTrigger>
       <DialogContent className="md:min-w-[90%] lg:min-w-[70%] max-h-screen overflow-auto">
         <DialogHeader>
-          <DialogTitle>{name}</DialogTitle>
+          <DialogTitle>{projectDetails.name}</DialogTitle>
         </DialogHeader>
 
         <DialogDescription>
@@ -219,8 +250,9 @@ export const CreateProjectModal = ({ projectDetails }: Props) => {
             <Button
               onClick={handleCreateProject}
               className={cn(successBtnStyles, 'w-28')}
+              disabled={isCreating}
             >
-              Create
+              {isCreating ? 'Creating...' : 'Create'}
             </Button>
           </div>
         </DialogFooter>
