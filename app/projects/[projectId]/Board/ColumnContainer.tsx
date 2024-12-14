@@ -128,7 +128,7 @@ export const ColumnContainer = ({
         }))}
         strategy={verticalListSortingStrategy}
       >
-        <div className="flex-1 flex-grow overflow-y-auto overflow-x-hidden space-y-2 py-2 bg-blue-500 h-full">
+        <div className="flex-1 flex-grow overflow-y-auto overflow-x-hidden space-y-2 p-2  h-full">
           {columnTasks.map((item) => (
             <TaskItem key={item.id} item={item} projectName={projectName} />
           ))}
