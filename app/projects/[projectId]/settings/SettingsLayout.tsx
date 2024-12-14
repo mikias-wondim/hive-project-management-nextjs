@@ -1,4 +1,10 @@
 'use client';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { ProjectAction } from '@/consts';
+import { useProjectAccess } from '@/hooks/useProjectAccess';
+import { cn } from '@/lib/utils';
 import {
   ArrowDownNarrowWide,
   ArrowLeft,
@@ -11,12 +17,8 @@ import {
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useParams, usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
-import { useParams, usePathname, useSearchParams } from 'next/navigation';
-import { cn } from '@/lib/utils';
 
 const navigationItems: (
   | 'separator'
@@ -24,38 +26,45 @@ const navigationItems: (
       label: string;
       link: string;
       icon: JSX.Element;
+      minRole?: Role;
     }
 )[] = [
   {
     label: 'Project settings',
     link: '/settings',
     icon: <Settings className="h-4 w-4" />,
+    minRole: 'admin',
   },
   {
     label: 'Manage access',
     link: '/settings/access',
     icon: <Users className="h-4 w-4" />,
+    minRole: 'admin',
   },
   'separator',
   {
     label: 'Label',
     link: '/settings/labels',
     icon: <Tags className="h-4 w-4" />,
+    minRole: 'admin',
   },
   {
     label: 'Status',
     link: '/settings/statuses',
     icon: <Kanban className="h-4 w-4" />,
+    minRole: 'admin',
   },
   {
     label: 'Priority',
     link: '/settings/priorities',
     icon: <ArrowDownNarrowWide className="h-4 w-4" />,
+    minRole: 'admin',
   },
   {
     label: 'Size',
     link: '/settings/sizes',
     icon: <Proportions className="h-4 w-4" />,
+    minRole: 'admin',
   },
 ];
 
@@ -66,6 +75,9 @@ interface Props {
 export const SettingsLayout = ({ title, children }: Props) => {
   const pathname = usePathname();
   const params = useParams();
+  const { can } = useProjectAccess({
+    projectId: params.projectId as string,
+  });
 
   return (
     <div className="grid h-minus-80 w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -79,26 +91,28 @@ export const SettingsLayout = ({ title, children }: Props) => {
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <span className="mx-2">Settings</span>
-            <Link
-              href={`/projects/${params.projectId}/insights`}
-              className="ml-auto"
-            >
-              <Button
-                title="Insights"
-                variant="outline"
-                size="icon"
-                className="ml-auto h-8 w-8"
+            {can(ProjectAction.VIEW_SETTINGS) && (
+              <Link
+                href={`/projects/${params.projectId}/insights`}
+                className="ml-auto"
               >
-                <LineChart className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-              </Button>
-            </Link>
+                <Button
+                  title="Insights"
+                  variant="outline"
+                  size="icon"
+                  className="ml-auto h-8 w-8"
+                >
+                  <LineChart className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                </Button>
+              </Link>
+            )}
           </div>
           <div className="flex-1 ">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
               {navigationItems.map((item, i) =>
                 item === 'separator' ? (
                   <Separator key={i} className="my-2" />
-                ) : (
+                ) : can(ProjectAction.UPDATE_OPTIONS) ? (
                   <Link
                     key={item.link}
                     href={`/projects/${params.projectId}${item.link}`}
@@ -112,6 +126,15 @@ export const SettingsLayout = ({ title, children }: Props) => {
                     {item.icon}
                     {item.label}
                   </Link>
+                ) : (
+                  <div
+                    key={item.link}
+                    className="flex items-center gap-3 text-muted-foreground px-3 py-2"
+                    title={`You do not have permission to access ${item.label}`}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </div>
                 )
               )}
             </nav>
@@ -140,23 +163,25 @@ export const SettingsLayout = ({ title, children }: Props) => {
                   <ArrowLeft className="h-4 w-4" />
                 </Link>
                 <span className="mx-2">Settings</span>
-                <Link href="/projects/1234/insights" className="ml-auto">
-                  <Button
-                    title="Insights"
-                    variant="outline"
-                    size="icon"
-                    className="ml-auto h-8 w-8"
-                  >
-                    <LineChart className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                  </Button>
-                </Link>
+                {can(ProjectAction.VIEW_SETTINGS) && (
+                  <Link href="/projects/1234/insights" className="ml-auto">
+                    <Button
+                      title="Insights"
+                      variant="outline"
+                      size="icon"
+                      className="ml-auto h-8 w-8"
+                    >
+                      <LineChart className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    </Button>
+                  </Link>
+                )}
               </div>
 
               <nav className="grid gap-2 text-lg font-medium">
                 {navigationItems.map((item, i) =>
                   item === 'separator' ? (
                     <Separator key={i} className="my-2" />
-                  ) : (
+                  ) : can(ProjectAction.VIEW_SETTINGS) ? (
                     <Link
                       key={item.link}
                       href={item.link}
@@ -168,6 +193,15 @@ export const SettingsLayout = ({ title, children }: Props) => {
                       {item.icon}
                       {item.label}
                     </Link>
+                  ) : (
+                    <div
+                      key={item.link}
+                      className="flex items-center gap-3 text-muted-foreground px-3 py-2"
+                      title={`You do not have permission to access ${item.label}`}
+                    >
+                      {item.icon}
+                      {item.label}
+                    </div>
                   )
                 )}
               </nav>

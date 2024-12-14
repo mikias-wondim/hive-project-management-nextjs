@@ -4,14 +4,38 @@ const supabase = createClient();
 
 export const projects = {
   async getUserProjects(userId: string) {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('created_by', userId)
-      .order('created_at', { ascending: false });
+    const [ownedProjects, memberProjects] = await Promise.all([
+      // Get projects created by user
+      supabase
+        .from('projects')
+        .select('*')
+        .eq('created_by', userId)
+        .order('created_at', { ascending: false }),
 
-    if (error) throw error;
-    return data as IProject[];
+      // Get projects where user is a member
+      supabase
+        .from('project_members')
+        .select(
+          `
+          project:projects (*)
+        `
+        )
+        .eq('user_id', userId)
+        .eq('invitationStatus', 'accepted')
+        .order('created_at', { ascending: false })
+        .not('project.created_by', 'eq', userId),
+    ]);
+
+    if (ownedProjects.error) throw ownedProjects.error;
+    if (memberProjects.error) throw memberProjects.error;
+
+    // Combine and deduplicate projects
+    const allProjects = [
+      ...ownedProjects.data,
+      ...memberProjects.data.map((row) => row.project),
+    ];
+
+    return allProjects as IProject[];
   },
 
   async createProject(projectData: ProjectWithOptions, userId: string) {

@@ -1,6 +1,6 @@
 'use client';
 import { customFieldsColors } from '@/consts/colors';
-import { hslModifyLightness } from '@/lib/utils';
+import { hslModifyLightness } from '@/lib/helpers';
 import { Circle, CircleCheck } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Dispatch, SetStateAction } from 'react';

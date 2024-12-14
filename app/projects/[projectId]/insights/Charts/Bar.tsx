@@ -5,7 +5,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { grayFieldColor } from '@/consts/colors';
-import { getAllKeysExceptLabelKey } from '@/lib/utils';
+import { getAllKeysExceptLabelKey } from '@/lib/helpers';
 import {
   Bar,
   CartesianGrid,
@@ -25,21 +25,13 @@ export const BarChart = ({ data, config, colors }: Props) => {
   const keys = getAllKeysExceptLabelKey(data, 'name');
 
   return (
-    <ChartContainer
-      config={config}
-      className="min-h-[200px] w-full border rounded-sm p-6"
-    >
+    <ChartContainer config={config} className="h-[400px] w-full">
       <ReBarChart accessibilityLayer data={data} layout="vertical">
         <CartesianGrid />
         <XAxis type="number" />
         <YAxis dataKey="name" type="category" />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <Legend
-          verticalAlign="top"
-          margin={{ bottom: 60 }}
-          style={{ marginTop: '-20px' }}
-          className="top-20"
-        />
+        <Legend wrapperStyle={{ paddingTop: '20px' }} />
         {keys.map((dataKey) => (
           <Bar
             key={dataKey}

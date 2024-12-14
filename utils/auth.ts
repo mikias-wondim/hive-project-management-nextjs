@@ -1,5 +1,5 @@
+import { useAccessStore } from '@/stores/useAccessStore';
 import { createClient } from './supabase/client';
-import { emails } from './emails';
 import { users } from './users';
 
 const supabase = createClient();
@@ -93,6 +93,7 @@ export const auth = {
   // Sign Out
   async signOut() {
     const { error } = await supabase.auth.signOut();
+    useAccessStore.getState().reset();
     if (error) throw { message: error.message, status: error.status };
   },
 
@@ -125,9 +126,6 @@ export const auth = {
     });
 
     if (error) throw error;
-
-    // Only send email if everything above succeeded
-    await emails.sendPasswordResetEmail(email, resetLink).catch(console.error);
 
     return {
       success: true,

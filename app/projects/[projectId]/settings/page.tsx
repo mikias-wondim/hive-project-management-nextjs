@@ -9,8 +9,12 @@ interface Props {
 
 export default async function SettingsPage({ params }: Props) {
   const { projectId } = await params;
-
   const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
 
   const { data: project, error } = await supabase
     .from('projects')

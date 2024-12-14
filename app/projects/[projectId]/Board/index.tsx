@@ -1,14 +1,12 @@
 'use client';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import React, { useState } from 'react';
-import { statuses, tasks as items, projects } from '@/mock-data';
-import { cn } from '@/lib/utils';
 import { secondaryBtnStyles } from '@/app/commonStyles';
 import { CreateCustomFieldOptionModal } from '@/components/CreateCustomFieldOptionModal';
-import { ColumnContainer } from './ColumnContainer';
+import { Button } from '@/components/ui/button';
+import { useProjectAccess } from '@/hooks/useProjectAccess';
+import { cn } from '@/lib/utils';
+import { tasks as tasksUtils } from '@/utils/tasks';
 import {
-  closestCenter,
+  closestCorners,
   DndContext,
   DragEndEvent,
   DragOverEvent,
@@ -18,14 +16,10 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import {
-  arrayMove,
-  horizontalListSortingStrategy,
-  SortableContext,
-} from '@dnd-kit/sortable';
-import { createPortal } from 'react-dom';
-import { v4 as uid } from 'uuid';
-import { useParams } from 'next/navigation';
+import { arrayMove } from '@dnd-kit/sortable';
+import { Plus } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ColumnContainer } from './ColumnContainer';
 import { TaskItem } from './TaskItem';
 
 interface Props {
@@ -39,11 +33,12 @@ export const Board: React.FC<Props> = ({
   projectName,
   statuses,
 }) => {
+  const { can } = useProjectAccess({ projectId });
   const [columns, setColumns] = useState(statuses);
-
-  const [tasks, setTasks] = useState<ITask[]>([]);
+  const [tasks, setTasks] = useState<ITaskWithOptions[]>([]);
   const [activeColumn, setActiveColumn] = useState<IStatus | null>(null);
-  const [activeTask, setActiveTask] = useState<ITask | null>(null);
+  const [activeTask, setActiveTask] = useState<ITaskWithOptions | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const touchSensor = useSensor(PointerSensor, {
     activationConstraint: {
@@ -54,11 +49,6 @@ export const Board: React.FC<Props> = ({
   const sensors = useSensors(touchSensor);
 
   const onDragStart = (event: DragStartEvent) => {
-    if (event.active.data.current?.type === 'column') {
-      setActiveColumn(event.active.data.current?.column);
-      return;
-    }
-
     if (event.active.data.current?.type === 'task') {
       setActiveTask(event.active.data.current?.task);
       return;
@@ -88,6 +78,9 @@ export const Board: React.FC<Props> = ({
 
   const onDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
+
+    console.log('active', active);
+    console.log('over', over);
 
     if (!over) return;
 
@@ -128,48 +121,53 @@ export const Board: React.FC<Props> = ({
     return tasks.filter((task) => task.status_id === statusId);
   };
 
+  const handleTaskCreated = (newTask: ITaskWithOptions) => {
+    setTasks((prev) => [...prev, newTask]);
+  };
+
+  // loading of tasks
+  useEffect(() => {
+    const loadTasks = async () => {
+      try {
+        const projectTasks =
+          await tasksUtils.getProjectTasksWithOptions(projectId);
+        setTasks(projectTasks);
+      } catch (error) {
+        console.error('Error loading tasks:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTasks();
+  }, [projectId]);
+
   return (
     <div className="relative flex flex-nowrap space-x-4 p-4 overflow-x-auto w-full h-minus-135">
       <DndContext
         onDragEnd={onDragEnd}
         onDragStart={onDragStart}
         onDragOver={onDragOver}
-        collisionDetection={closestCenter}
+        collisionDetection={closestCorners}
         sensors={sensors}
       >
-        <SortableContext
-          items={columns}
-          strategy={horizontalListSortingStrategy}
-        >
-          <div className="flex space-x-4">
-            {columns.map((column) => (
-              <ColumnContainer
-                key={column.id}
-                column={column}
-                tasks={getColumnTasks(column.id)}
-                projectName={projectName}
-              />
-            ))}
-          </div>
-        </SortableContext>
+        {columns.map((column) => (
+          <ColumnContainer
+            projectId={projectId}
+            key={column.id}
+            column={column}
+            can={can}
+            tasks={getColumnTasks(column.id)}
+            projectName={projectName}
+            onTaskCreated={handleTaskCreated}
+          />
+        ))}
 
-        {typeof window === 'object' &&
-          createPortal(
-            <DragOverlay>
-              {activeColumn && (
-                <ColumnContainer
-                  column={activeColumn}
-                  tasks={getColumnTasks(activeColumn.id)}
-                  projectName={projectName}
-                />
-              )}
-
-              {activeTask && (
-                <TaskItem item={activeTask} projectName={projectName} />
-              )}
-            </DragOverlay>,
-            document.body
+        <DragOverlay>
+          {activeTask && (
+            <TaskItem item={activeTask} projectName={projectName} />
           )}
+        </DragOverlay>
       </DndContext>
 
       <CreateCustomFieldOptionModal
@@ -179,10 +177,10 @@ export const Board: React.FC<Props> = ({
             ...prevColumns,
             {
               ...data,
-              id: uid(),
+              id: crypto.randomUUID(),
               order: prevColumns.length - 1,
               limit: 5,
-              project_id: 'project-1',
+              project_id: projectId,
             } as IStatus,
           ])
         }

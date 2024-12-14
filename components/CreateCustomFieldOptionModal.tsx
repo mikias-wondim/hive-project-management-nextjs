@@ -19,12 +19,14 @@ interface Props {
   triggerLabel?: string;
   triggerBtn?: ReactElement;
   handleSubmit?: (data: Omit<ICustomFieldData, 'id'>) => void;
+  can?: (action: ProjectAction) => boolean;
 }
 
 export const CreateCustomFieldOptionModal = ({
   title,
   triggerLabel,
   triggerBtn,
+  can,
   handleSubmit,
 }: Props) => {
   const { isModalOpen, openModal, closeModal } = useModalDialog();
@@ -41,15 +43,17 @@ export const CreateCustomFieldOptionModal = ({
       open={isModalOpen}
       onOpenChange={(isOpen) => !isOpen && closeModal()}
     >
-      <DialogTrigger asChild>
-        {triggerBtn ? (
-          React.cloneElement(triggerBtn, { onClick: openModal })
-        ) : (
-          <Button className={cn(successBtnStyles)} onClick={openModal}>
-            {triggerLabel}
-          </Button>
-        )}
-      </DialogTrigger>
+      {can?.('create_options') ? (
+        <DialogTrigger asChild>
+          {triggerBtn ? (
+            React.cloneElement(triggerBtn, { onClick: openModal })
+          ) : (
+            <Button className={cn(successBtnStyles)} onClick={openModal}>
+              {triggerLabel}
+            </Button>
+          )}
+        </DialogTrigger>
+      ) : null}
       <DialogContent className="max-w-96 max-h-[100vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

@@ -1,5 +1,5 @@
 'use client';
-import { hslModifyLightness } from '@/lib/utils';
+import { hslModifyLightness } from '@/lib/helpers';
 import { useTheme } from 'next-themes';
 import React, { useEffect, useState } from 'react';
 

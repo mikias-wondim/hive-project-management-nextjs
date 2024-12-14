@@ -1,18 +1,17 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { placeholderUserImageUrl } from '@/consts';
-import { AvatarProps } from '@radix-ui/react-avatar';
 
-interface Props extends AvatarProps {
-  name?: string;
-  url?: string;
+interface Props {
+  src?: string;
+  fallback?: string;
+  className?: string;
 }
 
-export const UserAvatar: React.FC<Props> = ({ name, url, ...rest }) => {
+export const UserAvatar: React.FC<Props> = ({ src, fallback, ...rest }) => {
   return (
     <Avatar {...rest}>
-      <AvatarImage src={url} alt="user avatar" />
+      <AvatarImage src={src} alt="user avatar" />
       <AvatarFallback>
-        {name ? name.charAt(0).toUpperCase() : 'O'}
+        {fallback ? fallback.charAt(0).toUpperCase() : 'O'}
       </AvatarFallback>
     </Avatar>
   );

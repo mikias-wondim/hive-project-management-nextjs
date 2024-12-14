@@ -1,5 +1,5 @@
 'Use client';
-import { getCustomFieldTagColorsForTheme } from '@/lib/utils';
+import { getCustomFieldTagColorsForTheme } from '@/lib/helpers';
 import React, { useEffect, useState } from 'react';
 import { Badge } from './ui/badge';
 import { useTheme } from 'next-themes';

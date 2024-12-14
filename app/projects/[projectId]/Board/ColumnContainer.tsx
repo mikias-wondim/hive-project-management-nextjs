@@ -2,84 +2,115 @@
 import { successBtnStyles } from '@/app/commonStyles';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import { useModalDialog } from '@/hooks/useModalDialog';
+import { useToast } from '@/components/ui/use-toast';
+import { ProjectAction } from '@/consts';
 import { cn } from '@/lib/utils';
-import { projects } from '@/mock-data';
+import { createClient } from '@/utils/supabase/client';
+import { tasks as taskUtils } from '@/utils/tasks';
+import { UniqueIdentifier } from '@dnd-kit/core';
 import {
   SortableContext,
-  useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { Plus } from 'lucide-react';
+import { User } from '@supabase/supabase-js';
+import { Plus, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { ColumnLabelColor } from './ColumnLabelColor';
 import { ColumnMenuOptions } from './ColumnMenuOptions';
 import { TaskItem } from './TaskItem';
 
 interface Props {
+  projectId: string;
   column: IStatus;
-  tasks: ITask[];
+  tasks: ITaskWithOptions[];
   projectName: string;
+  can?: (action: ProjectAction) => boolean;
+  onTaskCreated?: (task: ITaskWithOptions) => void;
 }
 
-export const ColumnContainer = ({ column, tasks, projectName }: Props) => {
-  const { openModal, closeModal, isModalOpen } = useModalDialog();
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: column.id,
-    data: {
-      type: 'column',
-      column,
-    },
-  });
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    transition,
+const supabase = createClient();
+
+export const ColumnContainer = ({
+  projectId,
+  column,
+  tasks: columnTasks,
+  projectName,
+  can,
+  onTaskCreated,
+}: Props) => {
+  const [showInput, setShowInput] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+  }, []);
+
+  const handleAddItem = async () => {
+    if (!inputValue.trim() || isCreating || !user) return;
+
+    try {
+      setIsCreating(true);
+
+      const task = await taskUtils.createTask({
+        project_id: projectId,
+        status_id: column.id,
+        title: inputValue.trim(),
+        description: '',
+        created_by: user.id,
+      });
+
+      toast({
+        title: 'Success',
+        description: 'Task created successfully',
+      });
+
+      onTaskCreated?.(task);
+      setInputValue('');
+      setShowInput(false);
+    } catch (error) {
+      console.error('Error creating task:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to create task',
+      });
+    } finally {
+      setIsCreating(false);
+    }
   };
 
-  const handleAddItem = () => {
-    closeModal();
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleAddItem();
+    } else if (e.key === 'Escape') {
+      setShowInput(false);
+      setInputValue('');
+    }
   };
-
-  if (isDragging) {
-    return (
-      <div
-        ref={setNodeRef}
-        style={style}
-        className="w-[350px] opacity-50 flex-shrink-0 bg-gray-100 dark:bg-gray-950 rounded-md border border-gray-200 dark:border-gray-800"
-      ></div>
-    );
-  }
 
   return (
-    <div
-      className="w-[350px] flex-shrink-0 bg-gray-100 dark:bg-gray-950 rounded-md border border-gray-200 dark:border-gray-800"
-      ref={setNodeRef}
-      style={style}
-    >
-      <div {...listeners} {...attributes} className="p-2 space-y-1">
+    <div className="w-[350px] flex-shrink-0 bg-gray-100 dark:bg-gray-950 rounded-md border border-gray-200 dark:border-gray-800 flex flex-col">
+      <div className="p-2 space-y-1">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <ColumnLabelColor color={column.color} />
             <h1 className="text-sm font-bold">{column.label}</h1>
             <div className="px-2 h-4 dark:text-gray-400 bg-gray-300 dark:bg-gray-700 rounded-full flex justify-center items-center text-[10px]">
-              {tasks.length} / {column.limit}
+              {columnTasks.length} / {column.limit}
             </div>
           </div>
-          <ColumnMenuOptions column={column} />
+          {can?.(ProjectAction.VIEW_SETTINGS) && (
+            <ColumnMenuOptions column={column} />
+          )}
         </div>
 
         <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -87,48 +118,63 @@ export const ColumnContainer = ({ column, tasks, projectName }: Props) => {
         </div>
       </div>
 
-      <div className=" flex flex-col h-minus-230 ">
-        <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
-          <div className="flex-grow overflow-y-auto space-y-2 py-2">
-            {tasks.map((item) => (
-              <TaskItem key={item.id} item={item} projectName={projectName} />
-            ))}
-          </div>
-        </SortableContext>
+      {/* Tasks List */}
 
-        <Sheet
-          open={isModalOpen}
-          onOpenChange={(open) => !open && closeModal()}
-        >
-          <SheetTrigger asChild>
+      <SortableContext
+        id={column.id}
+        items={columnTasks.map((item) => ({
+          ...item,
+          id: item.id as UniqueIdentifier,
+        }))}
+        strategy={verticalListSortingStrategy}
+      >
+        <div className="flex-1 flex-grow overflow-y-auto overflow-x-hidden space-y-2 py-2 bg-blue-500 h-full">
+          {columnTasks.map((item) => (
+            <TaskItem key={item.id} item={item} projectName={projectName} />
+          ))}
+        </div>
+      </SortableContext>
+
+      {/* Add Task Section */}
+      <div className="p-2 dark:border-gray-800">
+        {showInput ? (
+          <div className="flex gap-2">
+            <Input
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Enter task title..."
+              className="h-8"
+              autoFocus
+              disabled={isCreating}
+            />
             <Button
-              onClick={openModal}
-              className="h-[45px] w-full rounded-none mb-[-1px] rounded-b-sm bg-transparent text-gray-500 hover:bg-gray-200 hover:dark:bg-gray-900 dark:text-gray-400 flex justify-start hover:border-t"
+              onClick={handleAddItem}
+              className={cn(successBtnStyles, 'h-8 px-3')}
+              disabled={!inputValue.trim() || isCreating}
             >
-              <Plus className="w-4 h-4 mr-2" /> Add item
+              {isCreating ? 'Adding...' : 'Add'}
             </Button>
-          </SheetTrigger>
-
-          <SheetContent side="bottom" className="mx-4 border rounded-sm py-3">
-            <SheetHeader>
-              <SheetTitle className="text-xs mb-2 text-left font-normal">
-                Add new item to &apos;{column.label}&apos; column
-              </SheetTitle>
-            </SheetHeader>
-            <div className="flex gap-2 items-center">
-              <Input
-                placeholder="Start typing to add item"
-                className="h-8 focus:ring-0 dark:focus:ring-0"
-              />
-              <Button
-                onClick={handleAddItem}
-                className={cn(successBtnStyles, 'h-8')}
-              >
-                Add
-              </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
+            <Button
+              onClick={() => {
+                setShowInput(false);
+                setInputValue('');
+              }}
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              disabled={isCreating}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <Button
+            onClick={() => setShowInput(true)}
+            className="w-full h-8 bg-transparent text-gray-500 hover:bg-gray-200 hover:dark:bg-gray-900 dark:text-gray-400 flex justify-start"
+          >
+            <Plus className="w-4 h-4 mr-2" /> Add item
+          </Button>
+        )}
       </div>
     </div>
   );

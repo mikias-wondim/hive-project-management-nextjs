@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { usePathname } from 'next/navigation';
+import { useAccessStore } from '@/stores/useAccessStore';
 
 interface HeaderProps {
   className?: string;
@@ -33,6 +34,9 @@ export const Header = ({ className }: HeaderProps) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        useAccessStore.getState().reset(); // Reset when session ends
+      }
       setUser(session?.user ?? null);
     });
 

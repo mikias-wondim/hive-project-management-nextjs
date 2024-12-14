@@ -4,9 +4,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { SelectedCustomField } from '@/consts';
-import { defaultFieldColor, grayFieldColor } from '@/consts/colors';
-import { getAllKeysExceptLabelKey } from '@/lib/utils';
+import { defaultFieldColor } from '@/consts/colors';
+import { getAllKeysExceptLabelKey } from '@/lib/helpers';
 import {
   CartesianGrid,
   Legend,
@@ -26,22 +25,13 @@ export const LineChart = ({ data, config, colors }: Props) => {
   const keys = getAllKeysExceptLabelKey(data, 'name');
 
   return (
-    <ChartContainer
-      config={config}
-      className="min-h-[200px] w-full border rounded-sm p-6"
-    >
+    <ChartContainer config={config} className="h-[400px] w-full">
       <ReLineChart accessibilityLayer data={data}>
         <XAxis dataKey={'name'} tickLine={false} />
         <YAxis />
         <CartesianGrid />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <Legend
-          verticalAlign="top"
-          margin={{ bottom: 60 }}
-          style={{ marginTop: '-20px' }}
-          className="top-20"
-        />
-
+        <Legend wrapperStyle={{ paddingTop: '20px' }} />
         {keys.map((dataKey, i) => (
           <Line
             type="monotone"

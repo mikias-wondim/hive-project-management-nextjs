@@ -8,9 +8,13 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 
-export const RoleSelect = () => {
-  const [role, setRole] = useState<Role>('write');
+interface Props {
+  value?: Role;
+  onValueChange?: (value: Role) => void;
+  disabled?: boolean;
+}
 
+export const RoleSelect = ({ value, onValueChange, disabled }: Props) => {
   const getRole = (role: Role) => {
     switch (role) {
       case 'admin':
@@ -23,14 +27,11 @@ export const RoleSelect = () => {
   };
 
   return (
-    <Select
-      onValueChange={(value) => setRole(value as Role)}
-      defaultValue={role}
-    >
+    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
       <SelectTrigger className="w-[120px] h-8 focus:ring-0">
         <div className="flex text-xs">
           <span>Role: </span>
-          <span className="font-bold mx-1">{getRole(role)}</span>
+          <span className="font-bold mx-1">{getRole(value || 'read')}</span>
         </div>
       </SelectTrigger>
       <SelectContent>

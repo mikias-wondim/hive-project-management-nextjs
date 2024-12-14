@@ -231,7 +231,7 @@ export const CreateProjectModal = ({ projectDetails }: Props) => {
               <LabelList
                 labels={labels}
                 hiddenDescription
-                removeItem={handleRemoveLabelItem}
+                onLabelDeleted={handleRemoveLabelItem}
               />
             </div>
           </div>

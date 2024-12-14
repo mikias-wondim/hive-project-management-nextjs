@@ -1,71 +1,63 @@
 'use client';
 
 import { ChartConfig } from '@/components/ui/chart';
-import { labels, priorities, sizes, statuses, tasks } from '@/mock-data';
-import { useParams } from 'next/navigation';
+import { useInsightsContext } from '@/contexts/insightsContext';
 import { BarChart } from './Charts/Bar';
 import { ColumnChart } from './Charts/Column';
-import { generateChartData } from './functions';
-import { useInsightsContext } from '@/contexts/insightsContext';
 import { LineChart } from './Charts/Line';
 import { StackedAreaChart } from './Charts/StackedArea';
 import { StackedBarChart } from './Charts/StackedBar';
 import { StackedColumnChart } from './Charts/StackedColumn';
+import { generateChartData } from './functions';
+import { SimpleChart } from './SimpleChart';
 
 const chartConfig = {} satisfies ChartConfig;
 
 interface Props {
   layout: ChartLayout;
+  data: {
+    tasks: ITask[];
+    statuses: IStatus[];
+    labels: ILabel[];
+    sizes: ISize[];
+    priorities: IPriority[];
+  };
 }
-export function ChartRenderer({ layout }: Props) {
-  const params = useParams();
+
+export function ChartRenderer({ layout, data }: Props) {
   const { xAxis, groupBy } = useInsightsContext();
+  const { tasks, statuses, labels, sizes, priorities } = data;
 
-  const allTasks = tasks.filter((task) => task.project_id === params.projectId);
-  const allSizes = sizes.filter((size) => size.project_id === params.projectId);
-  const allLabels = labels.filter(
-    (label) => label.project_id === params.projectId
-  );
-  const allStatuses = statuses.filter(
-    (status) => status.project_id === params.projectId
-  );
-  const allPriorities = priorities.filter(
-    (priority) => priority.project_id === params.projectId
-  );
-
-  const { data, colors } = generateChartData(
+  const { data: chartData, colors } = generateChartData(
     xAxis,
     groupBy,
-    allTasks,
-    allStatuses,
-    allLabels,
-    allSizes,
-    allPriorities
+    tasks,
+    statuses,
+    labels,
+    sizes,
+    priorities
   );
 
-  if (layout === 'column') {
-    return <ColumnChart data={data} config={chartConfig} colors={colors} />;
-  }
+  const charts = {
+    column: ColumnChart,
+    line: LineChart,
+    'stacked-area': StackedAreaChart,
+    'stacked-bar': StackedBarChart,
+    'stacked-column': StackedColumnChart,
+    bar: BarChart,
+  };
 
-  if (layout === 'line') {
-    return <LineChart data={data} config={chartConfig} colors={colors} />;
-  }
+  const Chart = charts[layout];
 
-  if (layout === 'stacked-area') {
-    return (
-      <StackedAreaChart data={data} config={chartConfig} colors={colors} />
-    );
-  }
+  return (
+    <div className="relative h-[440px] w-full border rounded-sm p-6">
+      {!chartData?.length && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+          No data available
+        </div>
+      )}
 
-  if (layout === 'stacked-bar') {
-    return <StackedBarChart data={data} config={chartConfig} colors={colors} />;
-  }
-
-  if (layout === 'stacked-column') {
-    return (
-      <StackedColumnChart data={data} config={chartConfig} colors={colors} />
-    );
-  }
-
-  return <BarChart data={data} config={chartConfig} colors={colors} />;
+      <Chart data={chartData || []} colors={colors} config={chartConfig} />
+    </div>
+  );
 }

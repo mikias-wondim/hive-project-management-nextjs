@@ -1,4 +1,4 @@
-type Role = 'read' | 'write' | 'admin';
+type Role = 'read' | 'write' | 'admin' | 'owner';
 type InvitationStatus = 'invited' | 'accepted' | 'declined' | 'expired';
 
 type ChartLayout =
@@ -47,7 +47,7 @@ interface IProjectMember {
   role: Role;
   invitationStatus: InvitationStatus;
   invited_at: Date;
-  joined_at: Date;
+  joined_at?: Date;
 }
 
 interface IField {
@@ -80,10 +80,10 @@ interface ITask {
   title: string;
   description: string;
   labels: string[];
-  priority: string;
-  size: string;
-  startDate: Date;
-  endDate: Date;
+  priority: string | null;
+  size: string | null;
+  startDate: Date | null;
+  endDate: Date | null;
   created_at: Date;
   updated_at: Date;
   created_by: string;
@@ -159,3 +159,31 @@ type ProjectWithOptions = {
   priorities?: Omit<IPriority, 'created_at' | 'updated_at'>[];
   sizes?: Omit<ISize, 'created_at' | 'updated_at'>[];
 };
+
+interface MemberWithUser extends IProjectMember {
+  user: Pick<IUser, 'id' | 'name' | 'email' | 'avatar'>;
+}
+
+interface ITaskWithOptions extends Partial<ITask> {
+  creator?: {
+    id: string;
+    name: string;
+    avatar: string;
+  };
+  labels?: {
+    id: string;
+    label: string;
+    color: string;
+  }[];
+  size?: {
+    id: string;
+    label: string;
+    color: string;
+  };
+  priority?: {
+    id: string;
+    label: string;
+    color: string;
+    order: number;
+  };
+}

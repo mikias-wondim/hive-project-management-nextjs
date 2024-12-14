@@ -1,13 +1,25 @@
 'use client';
 import { Separator } from '@/components/ui/separator';
 import React, { useState } from 'react';
-import { ChartRenderer } from './ChartRenderer';
+// import { ChartRenderer } from './ChartRenderer';  // Comment this out temporarily
 import { Layout } from './Layout';
 import { XAxis } from './X-axis';
 import { GroupBy } from './GroupBy';
 import { InsightsContext } from '@/contexts/insightsContext';
+import { SimpleChart } from './SimpleChart'; // Add this import
+import { ChartRenderer } from './ChartRenderer';
 
-export const Insights = () => {
+interface Props {
+  initialData: {
+    tasks: ITask[];
+    statuses: IStatus[];
+    labels: ILabel[];
+    sizes: ISize[];
+    priorities: IPriority[];
+  };
+}
+
+export const Insights = ({ initialData }: Props) => {
   const [layout, setLayout] = useState<ChartLayout>('column');
   const [xAxis, setXAxis] = useState<CustomField>('status');
   const [groupBy, setGroupBy] = useState<CustomField | 'none'>('none');
@@ -31,7 +43,7 @@ export const Insights = () => {
               This chart shows the current status for the total number of items
               in your project.
             </p>
-            <ChartRenderer layout={layout} />
+            <ChartRenderer layout={layout} data={initialData} />
           </div>
         </div>
       </div>
