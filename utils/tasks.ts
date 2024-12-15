@@ -53,8 +53,6 @@ export const tasks = {
   },
 
   async moveTask(taskId: string, statusId: string) {
-    console.log('taskId', taskId);
-    console.log('statusId', statusId);
     const { data, error } = await supabase
       .from('tasks')
       .update({

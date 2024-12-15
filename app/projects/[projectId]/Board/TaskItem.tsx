@@ -44,7 +44,7 @@ export const TaskItem = ({ item, projectName }: Props) => {
       <div
         ref={setNodeRef}
         style={style}
-        className="w-[95%] min-h-[30px] bg-gray-200 dark:bg-gray-800 rounded-md border border-dashed border-gray-400 mx-2 dark:border-gray-600"
+        className="w-[95%] min-h-[80px] bg-gray-200 dark:bg-gray-800 rounded-md border border-dashed border-gray-400 mx-2 dark:border-gray-600"
       />
     );
   }
@@ -60,6 +60,7 @@ export const TaskItem = ({ item, projectName }: Props) => {
       <div className="flex justify-between">
         <span className="text-[11px] text-gray-400 dark:text-gray-400">
           {projectName}
+          <p className="text-xs text-gray-500 dark:text-gray-400">{item.id}</p>
         </span>
         <TooltipProvider>
           <Tooltip>

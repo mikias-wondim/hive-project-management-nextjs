@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { ColumnLabelColor } from './ColumnLabelColor';
 import { ColumnMenuOptions } from './ColumnMenuOptions';
 import { TaskItem } from './TaskItem';
+import { useDroppable } from '@dnd-kit/core';
 
 interface Props {
   projectId: string;
@@ -43,6 +44,14 @@ export const ColumnContainer = ({
   const [isCreating, setIsCreating] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const { toast } = useToast();
+
+  const { setNodeRef } = useDroppable({
+    id: column.id,
+    data: {
+      type: 'column',
+      column,
+    },
+  });
 
   useEffect(() => {
     const getUser = async () => {
@@ -98,7 +107,10 @@ export const ColumnContainer = ({
   };
 
   return (
-    <div className="w-[350px] flex-shrink-0 bg-gray-100 dark:bg-gray-950 rounded-md border border-gray-200 dark:border-gray-800 flex flex-col">
+    <div
+      ref={setNodeRef}
+      className="w-[350px] flex-shrink-0 bg-gray-100 dark:bg-gray-950 rounded-md border border-gray-200 dark:border-gray-800 flex flex-col"
+    >
       <div className="p-2 space-y-1">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -115,6 +127,9 @@ export const ColumnContainer = ({
 
         <div className="text-xs text-gray-500 dark:text-gray-400">
           {column.description}
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {column.id}
+          </p>
         </div>
       </div>
 

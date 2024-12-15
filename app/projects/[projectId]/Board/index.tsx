@@ -36,7 +36,8 @@ export const Board: React.FC<Props> = ({
   const { can } = useProjectAccess({ projectId });
   const [columns, setColumns] = useState(statuses);
   const [tasks, setTasks] = useState<ITaskWithOptions[]>([]);
-  const [activeColumn, setActiveColumn] = useState<IStatus | null>(null);
+  const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
+  const [overColumnId, setOverColumnId] = useState<string | null>(null);
   const [activeTask, setActiveTask] = useState<ITaskWithOptions | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -55,32 +56,46 @@ export const Board: React.FC<Props> = ({
     }
   };
 
-  const onDragEnd = (event: DragEndEvent) => {
-    setActiveColumn(null);
-    setActiveTask(null);
+  const onDragEnd = async (event: DragEndEvent) => {
+    console.log('======================================');
+    console.log('activeColumnId', activeColumnId);
+    console.log('overColumnId', overColumnId);
+
     const { active, over } = event;
 
     if (!over) return;
 
-    if (active.id === over.id) return;
+    // const isActiveItemATask = active.data.current?.type === 'task';
 
-    setColumns?.((prevColumns) => {
-      const activeColumnIndex = prevColumns.findIndex(
-        (item) => item.id === active.id
-      );
-      const overColumnIndex = prevColumns.findIndex(
-        (item) => item.id === over?.id
-      );
+    // if (isActiveItemATask) {
+    //   const task = tasks.find((task) => task.id === active.id);
 
-      return arrayMove(prevColumns, activeColumnIndex, overColumnIndex);
-    });
+    //   console.log('task', task);
+
+    //   console.log('active', task?.status_id);
+    //   console.log('__over', over.data.current?.task.status_id);
+    // }
+
+    // setActiveTask(null);
+
+    // if (active.id === over.id) return;
+
+    // await tasksUtils.moveTask(active.id as string, over.id as string);
+
+    // setColumns?.((prevColumns) => {
+    //   const activeColumnIndex = prevColumns.findIndex(
+    //     (item) => item.id === active.id
+    //   );
+    //   const overColumnIndex = prevColumns.findIndex(
+    //     (item) => item.id === over?.id
+    //   );
+
+    //   return arrayMove(prevColumns, activeColumnIndex, overColumnIndex);
+    // });
   };
 
   const onDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
-
-    console.log('active', active);
-    console.log('over', over);
 
     if (!over) return;
 
@@ -90,26 +105,52 @@ export const Board: React.FC<Props> = ({
     if (activeId === overId) return;
 
     const isActiveItemATask = active.data.current?.type === 'task';
-    const isOverItemATask = over.data.current?.type === 'task';
 
     if (!isActiveItemATask) return;
 
-    if (isActiveItemATask && isOverItemATask) {
+    const isOverATaskInSameColumn =
+      over.data.current?.type === 'task' &&
+      over.data.current?.task.status_id === active.data.current?.task.status_id;
+
+    const isOverATaskInDifferentColumn =
+      over.data.current?.type === 'task' &&
+      over.data.current?.task.status_id !== active.data.current?.task.status_id;
+
+    const isOverAColumn = over.data.current?.type === 'column';
+
+    if (isOverATaskInSameColumn) {
+      setOverColumnId(active.data.current?.task.status_id);
+      setActiveColumnId(active.data.current?.task.status_id);
       setTasks((prevTasks) => {
         const activeIndex = prevTasks.findIndex((item) => item.id === activeId);
         const overIndex = prevTasks.findIndex((item) => item.id === overId);
 
+        return arrayMove(prevTasks, activeIndex, overIndex);
+      });
+    }
+
+    if (isOverATaskInDifferentColumn) {
+      setOverColumnId(over.data.current?.task.status_id);
+      setActiveColumnId(active.data.current?.task.status_id);
+
+      setTasks((prevTasks) => {
+        const activeIndex = prevTasks.findIndex((item) => item.id === activeId);
+        const overIndex = prevTasks.findIndex((item) => item.id === overId);
+
+        // update the status_id(column id) of the active task to the over column id
         prevTasks[activeIndex].status_id = prevTasks[overIndex].status_id;
 
         return arrayMove(prevTasks, activeIndex, overIndex);
       });
     }
 
-    const isOverAColumn = over.data.current?.type === 'column';
-
-    if (isActiveItemATask && isOverAColumn) {
+    if (isOverAColumn) {
+      setOverColumnId(overId as string);
+      setActiveColumnId(active.data.current?.task.status_id);
       setTasks((prevTasks) => {
         const activeIndex = prevTasks.findIndex((item) => item.id === activeId);
+
+        // update the status_id(column id) of the active task to the over column id
         prevTasks[activeIndex].status_id = overId as string;
 
         return arrayMove(prevTasks, activeIndex, activeIndex);
@@ -118,7 +159,27 @@ export const Board: React.FC<Props> = ({
   };
 
   const getColumnTasks = (statusId: string) => {
-    return tasks.filter((task) => task.status_id === statusId);
+    const filteredTasks = tasks.filter((task) => task.status_id === statusId);
+
+    return filteredTasks.sort((a, b) => {
+      // If both tasks have priorities, sort by order
+      if (a.priority?.order !== undefined && b.priority?.order !== undefined) {
+        return b.priority.order - a.priority.order; // Higher order first
+      }
+
+      // If only task A has priority, it should come first
+      if (a.priority?.order !== undefined) {
+        return -1;
+      }
+
+      // If only task B has priority, it should come first
+      if (b.priority?.order !== undefined) {
+        return 1;
+      }
+
+      // If neither has priority, maintain original order
+      return 0;
+    });
   };
 
   const handleTaskCreated = (newTask: ITaskWithOptions) => {
