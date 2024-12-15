@@ -75,6 +75,7 @@ export const tasks = {
         id,
         title,
         status_id,
+        statusPosition,
         creator:created_by ( id, name, avatar ),
         size ( id, label, color ),
         priority ( id, label, color, order ),
@@ -97,11 +98,39 @@ export const tasks = {
       task_labels: null,
     })) as any[];
   },
+
+  async updateTaskPosition(taskId: string, statusPosition: number) {
+    const { data, error } = await supabase
+      .from('tasks')
+      .update({
+        statusPosition,
+        updated_at: new Date(),
+      })
+      .eq('id', taskId)
+      .select('*')
+      .single();
+
+    if (error) throw error;
+    return data as ITask;
+  },
+
+  async moveTaskWithPosition(
+    taskId: string,
+    statusId: string,
+    statusPosition: number
+  ) {
+    const { data, error } = await supabase
+      .from('tasks')
+      .update({
+        status_id: statusId,
+        statusPosition,
+        updated_at: new Date(),
+      })
+      .eq('id', taskId)
+      .select('*')
+      .single();
+
+    if (error) throw error;
+    return data as ITask;
+  },
 };
-
-// creator:created_by (id, name, avatar),
-// size:sizes!inner (id, label, color),
-// priority:priorities!inner (id, label, color, order)
-// labels!task_labels (id, label, color),
-
-// ('"failed to parse select parameter (id,title,status_id,creator:created_by(id,name,avatar),sizeId:size(id,label,color),)" (line 1, column 83)');

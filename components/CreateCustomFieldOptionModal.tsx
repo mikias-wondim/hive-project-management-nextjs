@@ -13,6 +13,7 @@ import { useModalDialog } from '@/hooks/useModalDialog';
 import { cn } from '@/lib/utils';
 import React, { ReactElement } from 'react';
 import { CustomOptionForm } from './CustomOptionForm';
+import { ProjectAction } from '@/consts';
 
 interface Props {
   title: string;
@@ -43,7 +44,7 @@ export const CreateCustomFieldOptionModal = ({
       open={isModalOpen}
       onOpenChange={(isOpen) => !isOpen && closeModal()}
     >
-      {can?.('create_options') ? (
+      {can?.(ProjectAction.UPDATE_OPTIONS) ? (
         <DialogTrigger asChild>
           {triggerBtn ? (
             React.cloneElement(triggerBtn, { onClick: openModal })

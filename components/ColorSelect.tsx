@@ -9,7 +9,7 @@ import { Button } from './ui/button';
 
 interface Props {
   color: string;
-  setColor: Dispatch<SetStateAction<string>>;
+  setColor?: Dispatch<SetStateAction<string>>;
 }
 export const ColorSelect = ({ color, setColor }: Props) => {
   const { theme } = useTheme();
@@ -28,7 +28,7 @@ export const ColorSelect = ({ color, setColor }: Props) => {
                   ? cfColor
                   : hslModifyLightness(cfColor, theme === 'light' ? 90 : 15),
             }}
-            onClick={() => setColor(cfColor)}
+            onClick={() => setColor?.(cfColor)}
           >
             {color === cfColor ? (
               <CircleCheck style={{ color: 'white' }} />

@@ -60,7 +60,6 @@ export const TaskItem = ({ item, projectName }: Props) => {
       <div className="flex justify-between">
         <span className="text-[11px] text-gray-400 dark:text-gray-400">
           {projectName}
-          <p className="text-xs text-gray-500 dark:text-gray-400">{item.id}</p>
         </span>
         <TooltipProvider>
           <Tooltip>

@@ -24,28 +24,94 @@ import { cn } from '@/lib/utils';
 import { Dialog } from '@radix-ui/react-dialog';
 import { Ellipsis, EyeOff, Pencil, Trash } from 'lucide-react';
 import { useState } from 'react';
+import { columns } from '@/utils/columns';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Props {
   column: IStatus;
+  onColumnUpdate?: (column: IStatus) => void;
+  onColumnDelete?: (columnId: string) => void;
+  onColumnHide?: (columnId: string) => void;
 }
 
-export const ColumnMenuOptions = ({ column }: Props) => {
+export const ColumnMenuOptions = ({
+  column,
+  onColumnUpdate,
+  onColumnDelete,
+  onColumnHide,
+}: Props) => {
   const { isModalOpen, openModal, closeModal } = useModalDialog();
   const [limit, setLimit] = useState(column.limit);
   const [optionType, setOptionType] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  const handleUpdateLimit = () => {
-    if (limit > 1 && limit !== column.limit) {
-      console.log('update limit to', limit);
+  const handleUpdateLimit = async () => {
+    if (limit < 1 || limit === column.limit) return;
+
+    try {
+      setIsLoading(true);
+      const updatedColumn = await columns.updateLimit(column.id, limit);
+      onColumnUpdate?.(updatedColumn);
+      toast({
+        title: 'Success',
+        description: 'Column limit updated successfully',
+      });
       closeModal();
-    } else {
-      console.log('limit not updated');
+    } catch (error) {
+      console.error('Error updating limit:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to update column limit',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleDeleteColumn = (id: string) => {
-    console.log('delete column with id', id);
-    closeModal();
+  const handleUpdateDetails = async (data: Omit<ICustomFieldData, 'id'>) => {
+    try {
+      setIsLoading(true);
+      const updatedColumn = await columns.updateDetails(column.id, data);
+      onColumnUpdate?.(updatedColumn);
+      toast({
+        title: 'Success',
+        description: 'Column details updated successfully',
+      });
+      closeModal();
+    } catch (error) {
+      console.error('Error updating details:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to update column details',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteColumn = async () => {
+    try {
+      setIsLoading(true);
+      await columns.deleteColumn(column.id);
+      onColumnDelete?.(column.id);
+      toast({
+        title: 'Success',
+        description: 'Column deleted successfully',
+      });
+      closeModal();
+    } catch (error) {
+      console.error('Error deleting column:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to delete column',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -77,7 +143,7 @@ export const ColumnMenuOptions = ({ column }: Props) => {
               <Pencil className="w-3 h-3 mr-2" />
               <span className="text-xs">Edit Details</span>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onColumnHide?.(column.id)}>
               <EyeOff className="w-3 h-3 mr-2" />
               <span className="text-xs">Hide from view</span>
             </DropdownMenuItem>
@@ -104,10 +170,14 @@ export const ColumnMenuOptions = ({ column }: Props) => {
               color={column.color}
               description={column.description}
               label={column.label}
-              onSubmit={(data) => console.log({ ...data, id: '' })}
+              onSubmit={handleUpdateDetails}
               submitBtnLabel="Update option"
               cancelButton={
-                <Button className={cn(secondaryBtnStyles)} onClick={closeModal}>
+                <Button
+                  className={cn(secondaryBtnStyles)}
+                  onClick={closeModal}
+                  disabled={isLoading}
+                >
                   Cancel
                 </Button>
               }
@@ -148,8 +218,9 @@ export const ColumnMenuOptions = ({ column }: Props) => {
               <Button
                 className={cn(successBtnStyles, 'px-3 h-7')}
                 onClick={handleUpdateLimit}
+                disabled={isLoading || limit < 1 || limit === column.limit}
               >
-                Save
+                {isLoading ? 'Saving...' : 'Save'}
               </Button>
             </div>
           </DialogContent>
@@ -183,9 +254,10 @@ export const ColumnMenuOptions = ({ column }: Props) => {
                 className={cn(
                   'text-red-600 dark:text-red-300 px-3 h-7 hover:bg-red-800 dark:hover:bg-red-600 hover:text-white dark:hover:text-white'
                 )}
-                onClick={() => handleDeleteColumn(column.id)}
+                onClick={handleDeleteColumn}
+                disabled={isLoading}
               >
-                Delete
+                {isLoading ? 'Deleting...' : 'Delete'}
               </Button>
             </DialogFooter>
           </DialogContent>

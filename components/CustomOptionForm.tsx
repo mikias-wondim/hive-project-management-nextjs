@@ -21,7 +21,7 @@ interface Props {
   description?: string;
   cancelButton: ReactNode;
   submitBtnLabel?: string;
-  onSubmit: (data: Omit<ICustomFieldData, 'id'>) => void;
+  onSubmit?: (data: Omit<ICustomFieldData, 'id'>) => void;
 }
 
 export const CustomOptionForm = ({
@@ -38,7 +38,7 @@ export const CustomOptionForm = ({
   const { theme } = useTheme();
 
   const handleSubmit = () => {
-    onSubmit({ label, color, description });
+    onSubmit?.({ label, color, description });
     setColor(blueColor);
     setLabel('');
     setDescription('');

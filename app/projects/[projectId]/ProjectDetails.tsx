@@ -27,7 +27,7 @@ export const ProjectDetails = ({
 
   return (
     <div>
-      <div className="flex justify-between items-center gap-6 bg-white dark:bg-gray-950 border py-4 px-8 h-[63px]">
+      <div className="flex justify-between items-center gap-6 bg-white dark:bg-gray-950 border py-4 px-8 h-[60px]">
         <h1
           title={projectName}
           className="text-xl text-gray-700 dark:text-gray-300 truncate"

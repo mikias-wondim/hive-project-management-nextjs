@@ -19,6 +19,13 @@ import { ColumnLabelColor } from './ColumnLabelColor';
 import { ColumnMenuOptions } from './ColumnMenuOptions';
 import { TaskItem } from './TaskItem';
 import { useDroppable } from '@dnd-kit/core';
+import { findLowestPosition } from '@/utils/sort';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface Props {
   projectId: string;
@@ -27,6 +34,9 @@ interface Props {
   projectName: string;
   can?: (action: ProjectAction) => boolean;
   onTaskCreated?: (task: ITaskWithOptions) => void;
+  onColumnUpdate?: (column: IStatus) => void;
+  onColumnDelete?: (columnId: string) => void;
+  onColumnHide?: (columnId: string) => void;
 }
 
 const supabase = createClient();
@@ -38,6 +48,9 @@ export const ColumnContainer = ({
   projectName,
   can,
   onTaskCreated,
+  onColumnUpdate,
+  onColumnDelete,
+  onColumnHide,
 }: Props) => {
   const [showInput, setShowInput] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -69,12 +82,17 @@ export const ColumnContainer = ({
     try {
       setIsCreating(true);
 
+      // Get lowest position and subtract 100 to place it at the bottom
+      const lowestPosition = findLowestPosition(columnTasks);
+      const newPosition = lowestPosition - 100;
+
       const task = await taskUtils.createTask({
         project_id: projectId,
         status_id: column.id,
         title: inputValue.trim(),
         description: '',
         created_by: user.id,
+        statusPosition: newPosition,
       });
 
       toast({
@@ -111,25 +129,50 @@ export const ColumnContainer = ({
       ref={setNodeRef}
       className="w-[350px] flex-shrink-0 bg-gray-100 dark:bg-gray-950 rounded-md border border-gray-200 dark:border-gray-800 flex flex-col"
     >
-      <div className="p-2 space-y-1">
+      <div className="p-2 space-y-1 flex-shrink-0">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <ColumnLabelColor color={column.color} />
             <h1 className="text-sm font-bold">{column.label}</h1>
-            <div className="px-2 h-4 dark:text-gray-400 bg-gray-300 dark:bg-gray-700 rounded-full flex justify-center items-center text-[10px]">
-              {columnTasks.length} / {column.limit}
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className={`px-2 h-4 rounded-full flex justify-center items-center text-[10px] ${
+                      column.limit > 0 && columnTasks.length >= column.limit
+                        ? 'bg-red-200 dark:bg-red-950 text-red-700 dark:text-red-400'
+                        : 'bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-400'
+                    }`}
+                  >
+                    {columnTasks.length}{' '}
+                    {column.limit ? `/ ${column.limit}` : ''}
+                  </div>
+                </TooltipTrigger>
+                {column.limit > 0 && columnTasks.length >= column.limit && (
+                  <TooltipContent>
+                    <p>
+                      Column limit{' '}
+                      {columnTasks.length > column.limit
+                        ? 'exceeded'
+                        : 'reached'}
+                    </p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           </div>
           {can?.(ProjectAction.VIEW_SETTINGS) && (
-            <ColumnMenuOptions column={column} />
+            <ColumnMenuOptions
+              column={column}
+              onColumnUpdate={onColumnUpdate}
+              onColumnDelete={onColumnDelete}
+              onColumnHide={onColumnHide}
+            />
           )}
         </div>
 
         <div className="text-xs text-gray-500 dark:text-gray-400">
           {column.description}
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            {column.id}
-          </p>
         </div>
       </div>
 
@@ -143,7 +186,7 @@ export const ColumnContainer = ({
         }))}
         strategy={verticalListSortingStrategy}
       >
-        <div className="flex-1 flex-grow overflow-y-auto overflow-x-hidden space-y-2 p-2  h-full">
+        <div className="flex-1 overflow-y-auto min-h-0 space-y-2 p-2">
           {columnTasks.map((item) => (
             <TaskItem key={item.id} item={item} projectName={projectName} />
           ))}
