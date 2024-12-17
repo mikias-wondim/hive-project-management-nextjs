@@ -14,6 +14,8 @@ import { getColumnSortedTasks } from '@/utils/sort';
 import { useBoardDragAndDrop } from './useBoardDragAndDrop';
 import { columns as columnsUtils } from '@/utils/columns';
 import { toast } from '@/components/ui/use-toast';
+import { TaskDetailsProvider } from './TaskDetailsContext';
+import { TaskDetailsDrawer } from './TaskDetailsDrawer';
 
 interface Props {
   projectId: string;
@@ -76,8 +78,7 @@ export const Board: React.FC<Props> = ({
   useEffect(() => {
     const loadTasks = async () => {
       try {
-        const projectTasks =
-          await tasksUtils.getProjectTasksWithOptions(projectId);
+        const projectTasks = await tasksUtils.board.getProjectTasks(projectId);
         setTasks(projectTasks);
       } catch (error) {
         console.error('Error loading tasks:', error);
@@ -111,71 +112,100 @@ export const Board: React.FC<Props> = ({
     }
   };
 
+  const handleTaskUpdate = async (taskId: string, updates: Partial<ITask>) => {
+    try {
+      await tasksUtils.details.update(taskId, updates);
+
+      if ('labels' in updates || 'size' in updates || 'priority' in updates) {
+        const updatedTasks = await tasksUtils.board.getProjectTasks(projectId);
+        setTasks(updatedTasks);
+      } else {
+        setTasks((prev) =>
+          prev.map((task) =>
+            task.id === taskId
+              ? { ...task, ...(updates as Partial<ITaskWithOptions>) }
+              : task
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error updating task:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to update task',
+      });
+    }
+  };
+
   return (
-    <div className="relative flex flex-col h-minus-135 overflow-y-hidden p-4">
-      {hiddenColumns.size > 0 && (
-        <div className="px-4 pt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 px-2 text-xs gap-1.5"
-            onClick={handleShowHiddenColumns}
-          >
-            <Eye className="w-3 h-3" />
-            Show hidden columns ({hiddenColumns.size})
-          </Button>
-        </div>
-      )}
-
-      <div className="flex-1 flex items-start gap-2">
-        <div className="flex flex-1 space-x-4 h-full">
-          {isUpdating && (
-            <div className="absolute inset-0 bg-black/50 z-50"></div>
-          )}
-          <DndContext
-            onDragEnd={(e) => handleDragEnd(e, tasks, setTasks)}
-            onDragStart={handleDragStart}
-            onDragOver={(e) => handleDragOver(e, tasks, setTasks)}
-            collisionDetection={closestCorners}
-            sensors={sensors}
-          >
-            {visibleColumns.map((column) => (
-              <ColumnContainer
-                projectId={projectId}
-                key={column.id}
-                column={column}
-                can={can}
-                tasks={getColumnTasks(column.id)}
-                projectName={projectName}
-                onTaskCreated={handleTaskCreated}
-                onColumnUpdate={handleColumnUpdate}
-                onColumnDelete={handleColumnDelete}
-                onColumnHide={handleColumnHide}
-              />
-            ))}
-
-            <DragOverlay>
-              {activeTask && (
-                <TaskItem item={activeTask} projectName={projectName} />
-              )}
-            </DragOverlay>
-          </DndContext>
-        </div>
-
-        <CreateCustomFieldOptionModal
-          title="New Column"
-          can={can}
-          handleSubmit={handleCreateColumn}
-          triggerBtn={
+    <TaskDetailsProvider onTaskUpdate={handleTaskUpdate}>
+      <div className="relative flex flex-col h-minus-135 overflow-y-hidden p-4">
+        {hiddenColumns.size > 0 && (
+          <div className="px-4 pt-4">
             <Button
-              className={cn(secondaryBtnStyles, 'w-8 h-8 p-2 mr-4')}
-              disabled={isLoading}
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs gap-1.5"
+              onClick={handleShowHiddenColumns}
             >
-              <Plus />
+              <Eye className="w-3 h-3" />
+              Show hidden columns ({hiddenColumns.size})
             </Button>
-          }
-        />
+          </div>
+        )}
+
+        <div className="flex-1 flex items-start gap-2">
+          <div className="flex flex-1 space-x-4 h-full">
+            {isUpdating && (
+              <div className="absolute inset-0 bg-black/50 z-50" />
+            )}
+            <DndContext
+              onDragEnd={(e) => handleDragEnd(e, tasks, setTasks)}
+              onDragStart={handleDragStart}
+              onDragOver={(e) => handleDragOver(e, tasks, setTasks)}
+              collisionDetection={closestCorners}
+              sensors={sensors}
+            >
+              {visibleColumns.map((column) => (
+                <ColumnContainer
+                  projectId={projectId}
+                  key={column.id}
+                  column={column}
+                  can={can}
+                  tasks={getColumnTasks(column.id)}
+                  projectName={projectName}
+                  onTaskCreated={handleTaskCreated}
+                  onColumnUpdate={handleColumnUpdate}
+                  onColumnDelete={handleColumnDelete}
+                  onColumnHide={handleColumnHide}
+                />
+              ))}
+
+              <DragOverlay>
+                {activeTask && (
+                  <TaskItem item={activeTask} projectName={projectName} />
+                )}
+              </DragOverlay>
+            </DndContext>
+          </div>
+
+          <CreateCustomFieldOptionModal
+            title="New Column"
+            can={can}
+            handleSubmit={handleCreateColumn}
+            triggerBtn={
+              <Button
+                className={cn(secondaryBtnStyles, 'w-8 h-8 p-2 mr-4')}
+                disabled={isLoading}
+              >
+                <Plus />
+              </Button>
+            }
+          />
+        </div>
+        <TaskDetailsDrawer />
       </div>
-    </div>
+    </TaskDetailsProvider>
   );
 };

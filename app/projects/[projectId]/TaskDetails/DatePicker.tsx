@@ -7,9 +7,12 @@ import {
 } from '@/components/ui/popover';
 import { format } from 'date-fns';
 
-export function DatePicker() {
-  const [date, setDate] = useState<Date>();
+interface DatePickerProps {
+  date?: Date;
+  onSelect: (date: Date | undefined) => void;
+}
 
+export const DatePicker = ({ date, onSelect }: DatePickerProps) => {
   return (
     <Popover>
       <PopoverTrigger>
@@ -27,10 +30,10 @@ export function DatePicker() {
         <Calendar
           mode="single"
           selected={date}
-          onSelect={setDate}
+          onSelect={onSelect}
           initialFocus
         />
       </PopoverContent>
     </Popover>
   );
-}
+};

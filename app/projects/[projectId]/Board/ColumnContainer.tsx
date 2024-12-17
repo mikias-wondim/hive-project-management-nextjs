@@ -86,7 +86,7 @@ export const ColumnContainer = ({
       const lowestPosition = findLowestPosition(columnTasks);
       const newPosition = lowestPosition - 100;
 
-      const task = await taskUtils.createTask({
+      const task = await taskUtils.create({
         project_id: projectId,
         status_id: column.id,
         title: inputValue.trim(),

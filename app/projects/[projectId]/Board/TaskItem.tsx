@@ -12,7 +12,9 @@ import { placeholderUserImageUrl } from '@/consts';
 import { UniqueIdentifier } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { TaskDetailsDrawer } from './TaskDetailsDrawer';
+import { useTaskDetails } from './TaskDetailsContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { prefetchTask } from '@/hooks/useTaskQueries';
 
 interface Props {
   item: ITaskWithOptions;
@@ -20,6 +22,8 @@ interface Props {
 }
 
 export const TaskItem = ({ item, projectName }: Props) => {
+  const queryClient = useQueryClient();
+  const { openDrawer } = useTaskDetails();
   const {
     attributes,
     listeners,
@@ -39,6 +43,12 @@ export const TaskItem = ({ item, projectName }: Props) => {
     transition,
   };
 
+  const handleClick = async () => {
+    // Prefetch task data before opening drawer
+    await prefetchTask(queryClient, item.id!);
+    openDrawer(item, projectName);
+  };
+
   if (isDragging) {
     return (
       <div
@@ -50,60 +60,63 @@ export const TaskItem = ({ item, projectName }: Props) => {
   }
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className="bg-white dark:bg-gray-900 px-4 py-3 mx-2 rounded-md border border-gray-300 dark:border-gray-700 text-sm"
-    >
-      <div className="flex justify-between">
-        <span className="text-[11px] text-gray-400 dark:text-gray-400">
-          {projectName}
-        </span>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Avatar className="w-4 h-4 border">
-                <AvatarImage
-                  src={item.creator?.avatar || placeholderUserImageUrl}
-                  alt={item.creator?.name || 'User'}
-                />
-                <AvatarFallback>
-                  {item.creator?.name?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{item.creator?.name || 'Unknown user'}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+    <>
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        className="bg-white dark:bg-gray-900 px-4 py-3 mx-2 rounded-md border border-gray-300 dark:border-gray-700 text-sm"
+        onClick={handleClick}
+      >
+        <div className="flex justify-between">
+          <span className="text-[11px] text-gray-400 dark:text-gray-400">
+            {projectName}
+          </span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Avatar className="w-4 h-4 border">
+                  <AvatarImage
+                    src={item.creator?.avatar || placeholderUserImageUrl}
+                    alt={item.creator?.name || 'User'}
+                  />
+                  <AvatarFallback>
+                    {item.creator?.name?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{item.creator?.name || 'Unknown user'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <div className="my-2">
+          <p>{item.title}</p>
+        </div>
+        <div className="space-x-2">
+          {item.priority && (
+            <CustomFieldTagRenderer
+              color={item.priority.color}
+              label={item.priority.label}
+            />
+          )}
+          {item.size && (
+            <CustomFieldTagRenderer
+              color={item.size.color}
+              label={item.size.label}
+            />
+          )}
+          {item.labels?.map((label) => (
+            <LabelBadge
+              key={label.id}
+              color={label.color}
+              labelText={label.label}
+            />
+          ))}
+        </div>
       </div>
-      <div className="my-2">
-        <TaskDetailsDrawer title={item.title || ''} taskId={item.id || ''} />
-      </div>
-      <div className="space-x-2">
-        {item.priority && (
-          <CustomFieldTagRenderer
-            color={item.priority.color}
-            label={item.priority.label}
-          />
-        )}
-        {item.size && (
-          <CustomFieldTagRenderer
-            color={item.size.color}
-            label={item.size.label}
-          />
-        )}
-        {item.labels?.map((label) => (
-          <LabelBadge
-            key={label.id}
-            color={label.color}
-            labelText={label.label}
-          />
-        ))}
-      </div>
-    </div>
+    </>
   );
 };

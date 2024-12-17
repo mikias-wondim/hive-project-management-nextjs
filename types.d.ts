@@ -88,6 +88,7 @@ interface ITask {
   updated_at: Date;
   created_by: string;
   statusPosition: number;
+  assignees?: string[];
 }
 
 interface IComment {
@@ -118,7 +119,7 @@ interface IActivity {
   content: TaskActivity;
   user_id: string;
   task_id: string;
-  created_at: Date;
+  updated_at: Date;
 }
 
 type TimelineType = 'activity' | 'comment';
@@ -170,6 +171,8 @@ interface ITaskWithOptions extends Partial<ITask> {
     id: string;
     name: string;
     avatar: string;
+    description: string;
+    links: IUserLink[];
   };
   labels?: {
     id: string;
@@ -187,4 +190,11 @@ interface ITaskWithOptions extends Partial<ITask> {
     color: string;
     order: number;
   };
+  assignees?: {
+    id: string;
+    name: string;
+    description: string;
+    avatar: string;
+    links: IUserLink[];
+  }[];
 }

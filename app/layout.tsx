@@ -1,11 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-
-import { Header } from '@/components/Header';
-import { ThemeProvider } from '@/components/ThemeProvider';
 import { cn } from '@/lib/utils';
-import { Toaster } from '@/components/ui/toaster';
+import { AppProvider } from './AppProvider';
 
 const fontSans = Inter({
   subsets: ['latin'],
@@ -30,13 +27,7 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        <ThemeProvider>
-          <div className="h-16">
-            <Header />
-          </div>
-          <div>{children}</div>
-        </ThemeProvider>
-        <Toaster />
+        <AppProvider>{children}</AppProvider>
       </body>
     </html>
   );

@@ -87,7 +87,7 @@ export const useBoardDragAndDrop = (projectId: string) => {
               : 500;
         }
 
-        await tasksUtils.updateTaskPosition(active.id as string, newPosition);
+        await tasksUtils.board.updatePosition(active.id as string, newPosition);
       } else {
         // Moving to different column
         if (overTask) {
@@ -110,15 +110,14 @@ export const useBoardDragAndDrop = (projectId: string) => {
               : 500;
         }
 
-        await tasksUtils.moveTaskWithPosition(
+        await tasksUtils.board.moveTask(
           active.id as string,
           overColumnId,
           newPosition
         );
       }
 
-      const updatedTasks =
-        await tasksUtils.getProjectTasksWithOptions(projectId);
+      const updatedTasks = await tasksUtils.board.getProjectTasks(projectId);
       setTasks(updatedTasks);
     } catch (error) {
       console.error('Error updating task position:', error);

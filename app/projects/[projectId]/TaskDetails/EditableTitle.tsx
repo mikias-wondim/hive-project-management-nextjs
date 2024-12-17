@@ -9,10 +9,35 @@ interface Props {
   title: string;
   isEditing: boolean;
   setIsEditing: Dispatch<SetStateAction<boolean>>;
+  onSave: (newTitle: string) => Promise<void>;
 }
 
-export const EditableTitle = ({ title, isEditing, setIsEditing }: Props) => {
-  const [text, setText] = useState('Creating a Quote for custom order');
+export const EditableTitle = ({
+  title,
+  isEditing,
+  setIsEditing,
+  onSave,
+}: Props) => {
+  const [text, setText] = useState(title);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      await onSave(text);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Failed to save title:', error);
+      // Optionally add error handling UI here
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setText(title); // Reset to original title
+    setIsEditing(false);
+  };
 
   if (isEditing) {
     return (
@@ -22,22 +47,27 @@ export const EditableTitle = ({ title, isEditing, setIsEditing }: Props) => {
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="border border-gray-300 rounded p-1 h-8 "
+            className="border border-gray-300 rounded p-1 h-8"
+            disabled={isSaving}
           />
         </div>
         <div className="space-x-2">
           <Button
-            onClick={() => setIsEditing(false)}
+            onClick={handleSave}
             className={cn(successBtnStyles, 'px-2 md:px-4')}
+            disabled={isSaving}
           >
-            <span className="hidden md:inline">Save</span>
+            <span className="hidden md:inline">
+              {isSaving ? 'Saving...' : 'Save'}
+            </span>
             <span className="md:hidden">
               <Check className="w-3 h-3" />
             </span>
           </Button>
           <Button
-            onClick={() => setIsEditing(false)}
+            onClick={handleCancel}
             className={cn(secondaryBtnStyles, 'px-2 md:px-4')}
+            disabled={isSaving}
           >
             <span className="hidden md:inline">Cancel</span>
             <span className="md:hidden">
@@ -55,7 +85,7 @@ export const EditableTitle = ({ title, isEditing, setIsEditing }: Props) => {
         title={title}
         className="text-left text-sm sm:text-md md:text-2xl lg:text-3xl flex-grow truncate"
       >
-        {title}
+        {text}
       </h1>
       <Button
         onClick={() => setIsEditing(true)}

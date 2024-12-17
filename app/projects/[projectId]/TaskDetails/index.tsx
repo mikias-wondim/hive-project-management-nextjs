@@ -15,7 +15,6 @@ import { OtherActions } from './OtherActions';
 import { Participants } from './Participants';
 import { Project } from './Project';
 import { TaskLabels } from './TaskLabels';
-
 const timelineItems = getTimelineItems();
 
 export const TaskDetails = () => {
