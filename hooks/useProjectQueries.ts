@@ -1,7 +1,25 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { projects } from '@/utils/projects';
+import { tasks } from '@/utils/tasks';
 
 export const useProjectQueries = (projectId: string) => {
+  const queryClient = useQueryClient();
+
+  // Fetch project tasks
+  const { data: projectTasks, refetch } = useQuery({
+    queryKey: ['project-tasks', projectId],
+    queryFn: () => tasks.board.getProjectTasks(projectId),
+    enabled: !!projectId,
+  });
+
+  // Function to invalidate and reload project tasks
+  const reloadProjectTasks = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: ['project-tasks', projectId],
+    });
+    return refetch(); // This returns a promise that resolves when the data is refetched
+  };
+
   // Fetch project members
   const { data: members } = useQuery({
     queryKey: ['project-members', projectId],
@@ -38,6 +56,8 @@ export const useProjectQueries = (projectId: string) => {
   });
 
   return {
+    projectTasks,
+    reloadProjectTasks,
     members,
     labels,
     statuses,

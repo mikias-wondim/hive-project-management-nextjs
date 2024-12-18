@@ -2,20 +2,20 @@
 import { secondaryBtnStyles } from '@/app/commonStyles';
 import { CreateCustomFieldOptionModal } from '@/components/CreateCustomFieldOptionModal';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
 import { useProjectAccess } from '@/hooks/useProjectAccess';
+import { useProjectQueries } from '@/hooks/useProjectQueries';
 import { cn } from '@/lib/utils';
-import { tasks as tasksUtils } from '@/utils/tasks';
+import { columns as columnsUtils } from '@/utils/columns';
+import { getColumnSortedTasks } from '@/utils/sort';
 import { closestCorners, DndContext, DragOverlay } from '@dnd-kit/core';
-import { Plus, Eye } from 'lucide-react';
+import { Eye, Plus } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { ColumnContainer } from './ColumnContainer';
-import { TaskItem } from './TaskItem';
-import { getColumnSortedTasks } from '@/utils/sort';
-import { useBoardDragAndDrop } from './useBoardDragAndDrop';
-import { columns as columnsUtils } from '@/utils/columns';
-import { toast } from '@/components/ui/use-toast';
 import { TaskDetailsProvider } from './TaskDetailsContext';
 import { TaskDetailsDrawer } from './TaskDetailsDrawer';
+import { TaskItem } from './TaskItem';
+import { useBoardDragAndDrop } from './useBoardDragAndDrop';
 
 interface Props {
   projectId: string;
@@ -31,17 +31,21 @@ export const Board: React.FC<Props> = ({
   const { can } = useProjectAccess({ projectId });
   const [columns, setColumns] = useState(statuses);
   const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
-  const [tasks, setTasks] = useState<ITaskWithOptions[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { projectTasks, reloadProjectTasks } = useProjectQueries(projectId);
+  const [tasks, setTasks] = useState<ITaskWithOptions[]>(projectTasks || []);
 
   const {
     activeTask,
-    isUpdating,
     sensors,
     handleDragStart,
     handleDragEnd,
     handleDragOver,
   } = useBoardDragAndDrop(projectId);
+
+  useEffect(() => {
+    setTasks(projectTasks || []);
+  }, [projectTasks]);
 
   const getColumnTasks = (statusId: string) => {
     return getColumnSortedTasks(tasks, statusId);
@@ -75,21 +79,6 @@ export const Board: React.FC<Props> = ({
     (column) => !hiddenColumns.has(column.id)
   );
 
-  useEffect(() => {
-    const loadTasks = async () => {
-      try {
-        const projectTasks = await tasksUtils.board.getProjectTasks(projectId);
-        setTasks(projectTasks);
-      } catch (error) {
-        console.error('Error loading tasks:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadTasks();
-  }, [projectId]);
-
   const handleCreateColumn = async (data: Omit<ICustomFieldData, 'id'>) => {
     try {
       setIsLoading(true);
@@ -112,13 +101,13 @@ export const Board: React.FC<Props> = ({
     }
   };
 
-  const handleTaskUpdate = async (taskId: string, updates: Partial<ITask>) => {
+  const handleTaskUpdate = async (
+    taskId: string,
+    updates: Partial<ITaskWithOptions>
+  ) => {
     try {
-      await tasksUtils.details.update(taskId, updates);
-
       if ('labels' in updates || 'size' in updates || 'priority' in updates) {
-        const updatedTasks = await tasksUtils.board.getProjectTasks(projectId);
-        setTasks(updatedTasks);
+        await reloadProjectTasks();
       } else {
         setTasks((prev) =>
           prev.map((task) =>
@@ -157,11 +146,8 @@ export const Board: React.FC<Props> = ({
 
         <div className="flex-1 flex items-start gap-2">
           <div className="flex flex-1 space-x-4 h-full">
-            {isUpdating && (
-              <div className="absolute inset-0 bg-black/50 z-50" />
-            )}
             <DndContext
-              onDragEnd={(e) => handleDragEnd(e, tasks, setTasks)}
+              onDragEnd={(e) => handleDragEnd(e, tasks)}
               onDragStart={handleDragStart}
               onDragOver={(e) => handleDragOver(e, tasks, setTasks)}
               collisionDetection={closestCorners}

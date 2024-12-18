@@ -10,6 +10,7 @@ import {
 import { arrayMove } from '@dnd-kit/sortable';
 import { useState } from 'react';
 import { getColumnSortedTasks } from '@/utils/sort';
+import { useProjectQueries } from '@/hooks/useProjectQueries';
 
 type SetTasksFunction = React.Dispatch<
   React.SetStateAction<ITaskWithOptions[]>
@@ -20,6 +21,7 @@ export const useBoardDragAndDrop = (projectId: string) => {
   const [overColumnId, setOverColumnId] = useState<string | null>(null);
   const [activeTask, setActiveTask] = useState<ITaskWithOptions | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const { reloadProjectTasks } = useProjectQueries(projectId);
 
   const touchSensor = useSensor(PointerSensor, {
     activationConstraint: {
@@ -43,8 +45,7 @@ export const useBoardDragAndDrop = (projectId: string) => {
 
   const handleDragEnd = async (
     event: DragEndEvent,
-    tasks: ITaskWithOptions[],
-    setTasks: SetTasksFunction
+    tasks: ITaskWithOptions[]
   ) => {
     const { active, over } = event;
 
@@ -117,8 +118,7 @@ export const useBoardDragAndDrop = (projectId: string) => {
         );
       }
 
-      const updatedTasks = await tasksUtils.board.getProjectTasks(projectId);
-      setTasks(updatedTasks);
+      await reloadProjectTasks();
     } catch (error) {
       console.error('Error updating task position:', error);
     } finally {

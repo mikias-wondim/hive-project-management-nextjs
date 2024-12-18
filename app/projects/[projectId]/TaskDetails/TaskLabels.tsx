@@ -30,7 +30,9 @@ export const TaskLabels = () => {
   useEffect(() => {
     if (task?.labels) {
       setSelectedLabels(task.labels.map((label) => label.id));
+      updateTaskLabels?.(selectedTask?.id || '', task?.labels);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [task?.labels]);
 
   const handleLabelToggle = (labelId: string) => {
@@ -49,15 +51,6 @@ export const TaskLabels = () => {
         JSON.stringify(task?.labels?.map((label) => label.id).sort())
     ) {
       updateLabels(selectedLabels);
-
-      const updatedLabels = selectedLabels
-        .map((id) => labels?.find((label) => label.id === id))
-        .filter(
-          (label): label is { id: string; label: string; color: string } =>
-            !!label
-        );
-
-      updateTaskLabels?.(selectedTask?.id || '', updatedLabels);
     }
     setIsOpen(open);
   };

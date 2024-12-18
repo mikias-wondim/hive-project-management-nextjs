@@ -61,7 +61,7 @@ export const useTaskQueries = (taskId: string) => {
 
   // Update task priority
   const { mutate: updatePriority } = useMutation({
-    mutationFn: (priorityId: string) =>
+    mutationFn: (priorityId: string | null) =>
       tasks.details.update(taskId, { priority: priorityId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['task', taskId] });
@@ -70,7 +70,7 @@ export const useTaskQueries = (taskId: string) => {
 
   // Update task size
   const { mutate: updateSize } = useMutation({
-    mutationFn: (sizeId: string) =>
+    mutationFn: (sizeId: string | null) =>
       tasks.details.update(taskId, { size: sizeId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['task', taskId] });

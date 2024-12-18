@@ -14,11 +14,13 @@ interface TaskDetailsContextType {
   ) => void;
   updateTaskSize?: (
     taskId: string,
-    size: { id: string; label: string; color: string } | null
+    size: { id: string; label: string; color: string } | undefined
   ) => void;
   updateTaskPriority?: (
     taskId: string,
-    priority: { id: string; label: string; color: string; order: number } | null
+    priority:
+      | { id: string; label: string; color: string; order: number }
+      | undefined
   ) => void;
 }
 
@@ -31,7 +33,7 @@ export function TaskDetailsProvider({
   onTaskUpdate,
 }: {
   children: React.ReactNode;
-  onTaskUpdate?: (taskId: string, updates: Partial<ITask>) => void;
+  onTaskUpdate?: (taskId: string, updates: Partial<ITaskWithOptions>) => void;
 }) {
   const [selectedTask, setSelectedTask] = useState<ITaskWithOptions | null>(
     null
@@ -71,27 +73,29 @@ export function TaskDetailsProvider({
     setSelectedTask((prev) =>
       prev?.id === taskId ? { ...prev, labels } : prev
     );
-    onTaskUpdate?.(taskId, { labels: labels.map((l) => l.id) });
+    onTaskUpdate?.(taskId, { labels: labels || [] });
   };
 
   const updateTaskSize = (
     taskId: string,
-    size: { id: string; label: string; color: string } | null
+    size: { id: string; label: string; color: string } | undefined
   ) => {
     setSelectedTask((prev) =>
       prev?.id === taskId ? { ...prev, size: size || undefined } : prev
     );
-    onTaskUpdate?.(taskId, { size: size?.id || null });
+    onTaskUpdate?.(taskId, { size });
   };
 
   const updateTaskPriority = (
     taskId: string,
-    priority: { id: string; label: string; color: string; order: number } | null
+    priority:
+      | { id: string; label: string; color: string; order: number }
+      | undefined
   ) => {
     setSelectedTask((prev) =>
       prev?.id === taskId ? { ...prev, priority: priority || undefined } : prev
     );
-    onTaskUpdate?.(taskId, { priority: priority?.id || null });
+    onTaskUpdate?.(taskId, { priority });
   };
 
   return (

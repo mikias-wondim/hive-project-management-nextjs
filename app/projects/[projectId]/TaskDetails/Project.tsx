@@ -27,7 +27,7 @@ export const Project = () => {
 
   const handlePrioritySelect = (priorityId: string | null) => {
     if (!selectedTask?.id) return;
-    updatePriority(priorityId || '');
+    updatePriority(priorityId || null);
     const priority = priorityId
       ? priorities?.find((p) => p.id === priorityId) || null
       : null;
@@ -36,7 +36,7 @@ export const Project = () => {
 
   const handleSizeSelect = (sizeId: string | null) => {
     if (!selectedTask?.id) return;
-    updateSize(sizeId || '');
+    updateSize(sizeId || null);
     const size = sizeId ? sizes?.find((s) => s.id === sizeId) || null : null;
     updateTaskSize?.(selectedTask.id, size);
   };
@@ -64,6 +64,9 @@ export const Project = () => {
 
   const startDate = task?.startDate ? new Date(task.startDate) : undefined;
   const endDate = task?.endDate ? new Date(task.endDate) : undefined;
+
+  const sortedPriorities = priorities?.sort((a, b) => a.order - b.order);
+  const sortedSizes = sizes?.sort((a, b) => a.order - b.order);
 
   return (
     <>
@@ -103,7 +106,7 @@ export const Project = () => {
               <span className="w-3 h-3 mr-2" />
               <div className="flex-grow">None</div>
             </DropdownMenuItem>
-            {priorities?.map((priority) => (
+            {sortedPriorities?.map((priority) => (
               <DropdownMenuItem
                 key={priority.id}
                 onClick={() => handlePrioritySelect(priority.id)}
@@ -139,7 +142,7 @@ export const Project = () => {
               <span className="w-3 h-3 mr-2" />
               <div className="flex-grow">None</div>
             </DropdownMenuItem>
-            {sizes?.map((size) => (
+            {sortedSizes?.map((size) => (
               <DropdownMenuItem
                 key={size.id}
                 onClick={() => handleSizeSelect(size.id)}
