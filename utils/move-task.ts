@@ -37,11 +37,8 @@ export const moveTaskUp = (
   const topTaskIndex = overIndex - 1;
 
   if (topTaskIndex < 0) {
-    console.log('topTaskIndex', topTaskIndex);
     const overTask = tasks.find((task) => task.id === overTaskId);
-    console.log('overTask', overTask);
     const newPosition = overTask ? (overTask.statusPosition ?? 0) + 100 : 10000;
-    console.log('newPos', newPosition);
     return newPosition;
   }
 

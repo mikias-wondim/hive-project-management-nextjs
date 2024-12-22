@@ -246,19 +246,14 @@ export const useBoardDragAndDrop = (projectId: string) => {
 
         if (activeMidY < overMidY) {
           //Insert above
-          console.log('Insert above', over.data.current?.task.title);
-          console.log('overPosition', overPosition);
-          console.log('overId', overId);
           newStatusPosition = moveTaskUp(
             overPosition,
             overId as string,
             overColumnId ?? '',
             tasks
           );
-          console.log('newStatusPosition', newStatusPosition);
         } else {
           // insert below
-          console.log('Insert below');
           newStatusPosition = moveTaskDown(
             overPosition,
             overId as string,
