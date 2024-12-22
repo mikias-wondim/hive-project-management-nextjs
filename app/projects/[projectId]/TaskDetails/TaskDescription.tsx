@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/hover-card';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
+import { UserCard } from '@/components/UserCard';
 
 export const TaskDescription = () => {
   const { selectedTask } = useTaskDetails();
@@ -46,58 +47,13 @@ export const TaskDescription = () => {
     <div className="border border-sky-200 dark:border-blue-900 rounded">
       <div className="flex items-center justify-end bg-sky-100 dark:bg-slate-900 rounded-t border-b border-sky-200 dark:border-blue-900 overflow-x-auto px-4 py-2">
         <div className="flex justify-between items-center gap-2 text-sm">
-          <HoverCard>
-            <HoverCardTrigger asChild>
-              <div className="flex items-center gap-2 cursor-pointer">
-                <UserAvatar
-                  src={task?.creator?.avatar}
-                  fallback={task?.creator?.name?.charAt(0)}
-                  className="h-5 w-5"
-                />
-                <div className="text-xs">{task?.creator?.name}</div>
-              </div>
-            </HoverCardTrigger>
-            <HoverCardContent className="w-80">
-              <div className="flex items-center gap-2">
-                <UserAvatar
-                  src={selectedTask?.creator?.avatar}
-                  fallback={selectedTask?.creator?.name?.charAt(0)}
-                  className="h-8 w-8"
-                />
-                <h4 className="text-sm font-semibold">
-                  {selectedTask?.creator?.name}
-                </h4>
-              </div>
-
-              <div className="py-2">
-                <p className="text-sm text-muted-foreground">
-                  {task?.creator?.description}
-                </p>
-
-                {task?.creator?.links && task?.creator?.links.length > 0 && (
-                  <Separator className="my-2" />
-                )}
-
-                <div className="flex items-center">
-                  {task?.creator?.links.map((link) => (
-                    <div key={link.id}>
-                      <Link
-                        href={link.url}
-                        target="_blank"
-                        className="text-xs text-muted-foreground hover:text-sky-500"
-                      >
-                        {link.label}
-                      </Link>
-                      <span className="text-xs text-muted-foreground px-3">
-                        |
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </HoverCardContent>
-          </HoverCard>
-
+          <UserCard
+            id={selectedTask?.creator?.id!}
+            name={selectedTask?.creator?.name || ''}
+            avatarUrl={selectedTask?.creator?.avatar || ''}
+            description={task?.creator?.description}
+            links={task?.creator?.links}
+          />
           <span className="text-gray-500 text-xs">
             opened {formatRelativeTime(task?.created_at!)}
           </span>

@@ -19,7 +19,7 @@ import { ColumnLabelColor } from './ColumnLabelColor';
 import { ColumnMenuOptions } from './ColumnMenuOptions';
 import { TaskItem } from './TaskItem';
 import { useDroppable } from '@dnd-kit/core';
-import { findLowestPosition } from '@/utils/sort';
+import { getLowestColumnPosition } from '@/utils/sort';
 import {
   Tooltip,
   TooltipContent,
@@ -32,6 +32,7 @@ interface Props {
   column: IStatus;
   tasks: ITaskWithOptions[];
   projectName: string;
+  isOver: boolean;
   can?: (action: ProjectAction) => boolean;
   onTaskCreated?: (task: ITaskWithOptions) => void;
   onColumnUpdate?: (column: IStatus) => void;
@@ -46,6 +47,7 @@ export const ColumnContainer = ({
   column,
   tasks: columnTasks,
   projectName,
+  isOver,
   can,
   onTaskCreated,
   onColumnUpdate,
@@ -69,9 +71,9 @@ export const ColumnContainer = ({
   useEffect(() => {
     const getUser = async () => {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
+        data: { session },
+      } = await supabase.auth.getSession();
+      setUser(session?.user || null);
     };
     getUser();
   }, []);
@@ -82,9 +84,8 @@ export const ColumnContainer = ({
     try {
       setIsCreating(true);
 
-      // Get lowest position and subtract 100 to place it at the bottom
-      const lowestPosition = findLowestPosition(columnTasks);
-      const newPosition = lowestPosition - 100;
+      // Get lowest position as the new position and place it at the bottom
+      const newPosition = getLowestColumnPosition(columnTasks);
 
       const task = await taskUtils.create({
         project_id: projectId,
@@ -127,13 +128,14 @@ export const ColumnContainer = ({
   return (
     <div
       ref={setNodeRef}
-      className="w-[350px] flex-shrink-0 bg-gray-100 dark:bg-gray-950 rounded-md border border-gray-200 dark:border-gray-800 flex flex-col"
+      className="w-[350px] overflow-x-hidden h-full flex-shrink-0 bg-gray-100 dark:bg-gray-950 rounded-md border border-gray-200 dark:border-gray-800 flex flex-col"
     >
       <div className="p-2 space-y-1 flex-shrink-0">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <ColumnLabelColor color={column.color} />
             <h1 className="text-sm font-bold">{column.label}</h1>
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -173,6 +175,9 @@ export const ColumnContainer = ({
 
         <div className="text-xs text-gray-500 dark:text-gray-400">
           {column.description}
+          <p className="text-xs text-gray-400 dark:text-gray-400">
+            {column.id}
+          </p>
         </div>
       </div>
 
@@ -186,9 +191,19 @@ export const ColumnContainer = ({
         }))}
         strategy={verticalListSortingStrategy}
       >
-        <div className="flex-1 overflow-y-auto min-h-0 space-y-2 p-2">
-          {columnTasks.map((item) => (
-            <TaskItem key={item.id} item={item} projectName={projectName} />
+        <div
+          className={cn(
+            'flex-1 overflow-y-auto space-y-2 p-2',
+            isOver && 'bg-green-200 dark:bg-green-950'
+          )}
+        >
+          {columnTasks.map((item, index) => (
+            <TaskItem
+              key={item.id}
+              item={item}
+              projectName={projectName}
+              index={index}
+            />
           ))}
         </div>
       </SortableContext>

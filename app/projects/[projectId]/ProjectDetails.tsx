@@ -26,8 +26,8 @@ export const ProjectDetails = ({
   const { can } = useProjectAccess({ projectId });
 
   return (
-    <div>
-      <div className="flex justify-between items-center gap-6 bg-white dark:bg-gray-950 border py-4 px-8 h-[60px]">
+    <div className="w-full overflow-x-auto px-2 h-[calc(100vh-65px)]">
+      <div className="w-full flex justify-between items-center gap-6 bg-white dark:bg-gray-950 border py-4 px-8 h-[60px]">
         <h1
           title={projectName}
           className="text-xl text-gray-700 dark:text-gray-300 truncate"
@@ -59,11 +59,14 @@ export const ProjectDetails = ({
           </div>
         )}
       </div>
-      <Board
-        projectId={projectId}
-        projectName={projectName}
-        statuses={statuses}
-      />
+
+      <div className="h-[calc(100vh-130px)]">
+        <Board
+          projectId={projectId}
+          projectName={projectName}
+          statuses={statuses}
+        />
+      </div>
     </div>
   );
 };

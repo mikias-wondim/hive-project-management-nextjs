@@ -42,13 +42,11 @@ const ProjectDetailsPage = async ({ params }: Props) => {
   if (error || !project) redirect('/projects');
 
   return (
-    <div className="h-minus-135">
-      <ProjectDetails
-        projectName={project.name}
-        projectId={projectId}
-        statuses={project.statuses as IStatus[]}
-      />
-    </div>
+    <ProjectDetails
+      projectName={project.name}
+      projectId={projectId}
+      statuses={project.statuses as IStatus[]}
+    />
   );
 };
 

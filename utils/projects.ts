@@ -173,17 +173,16 @@ export const projects = {
           user:users (
             id,
             name,
-            avatar
+            avatar,
+            description,
+            links
           )
         `
         )
         .eq('project_id', projectId);
 
       if (error) throw error;
-      return (data as any[]).map((m) => m.user) as Pick<
-        IUser,
-        'id' | 'name' | 'avatar'
-      >[];
+      return (data as any[]).map((m) => m.user) as IUser[];
     },
   },
 

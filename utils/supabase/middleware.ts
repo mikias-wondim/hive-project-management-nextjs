@@ -42,8 +42,8 @@ export async function updateSession(request: NextRequest) {
   );
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
   const currentPath = request.nextUrl.pathname;
   const nextPath =
@@ -59,7 +59,7 @@ export async function updateSession(request: NextRequest) {
     return regex.test(currentPath);
   });
 
-  if (!user && !isPublicPath) {
+  if (!session && !isPublicPath) {
     // no user, redirect to login page with current path as next
     const url = request.nextUrl.clone();
     url.pathname = '/login';
@@ -67,7 +67,10 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && (currentPath === '/login' || currentPath === '/create-account')) {
+  if (
+    session &&
+    (currentPath === '/login' || currentPath === '/create-account')
+  ) {
     // For logged in users trying to access auth pages, redirect to the next path
     const url = new URL(nextPath, request.url);
     return NextResponse.redirect(url);

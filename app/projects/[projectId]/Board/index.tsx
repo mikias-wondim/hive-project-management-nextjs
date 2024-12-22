@@ -7,7 +7,7 @@ import { useProjectAccess } from '@/hooks/useProjectAccess';
 import { useProjectQueries } from '@/hooks/useProjectQueries';
 import { cn } from '@/lib/utils';
 import { columns as columnsUtils } from '@/utils/columns';
-import { getColumnSortedTasks } from '@/utils/sort';
+import { getColumnSortedTasks, sortTasks } from '@/utils/sort';
 import { closestCorners, DndContext, DragOverlay } from '@dnd-kit/core';
 import { Eye, Plus } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -38,6 +38,7 @@ export const Board: React.FC<Props> = ({
   const {
     activeTask,
     sensors,
+    overColumnId,
     handleDragStart,
     handleDragEnd,
     handleDragOver,
@@ -47,8 +48,10 @@ export const Board: React.FC<Props> = ({
     setTasks(projectTasks || []);
   }, [projectTasks]);
 
+  const sortedTasks = sortTasks(tasks);
+
   const getColumnTasks = (statusId: string) => {
-    return getColumnSortedTasks(tasks, statusId);
+    return getColumnSortedTasks(sortedTasks, statusId);
   };
 
   const handleTaskCreated = (newTask: ITaskWithOptions) => {
@@ -129,9 +132,9 @@ export const Board: React.FC<Props> = ({
 
   return (
     <TaskDetailsProvider onTaskUpdate={handleTaskUpdate}>
-      <div className="relative flex flex-col h-minus-135 overflow-y-hidden p-4">
+      <div className="h-[calc(100vh-200px)]">
         {hiddenColumns.size > 0 && (
-          <div className="px-4 pt-4">
+          <div className="py-1">
             <Button
               variant="outline"
               size="sm"
@@ -144,12 +147,19 @@ export const Board: React.FC<Props> = ({
           </div>
         )}
 
-        <div className="flex-1 flex items-start gap-2">
-          <div className="flex flex-1 space-x-4 h-full">
+        <div className="flex gap-1 w-full overflow-x-auto py-1">
+          <div
+            className={cn(
+              'flex gap-3',
+              hiddenColumns.size > 0
+                ? 'h-[calc(100vh-175px)]'
+                : 'h-[calc(100vh-155px)]'
+            )}
+          >
             <DndContext
-              onDragEnd={(e) => handleDragEnd(e, tasks)}
+              onDragEnd={(event) => handleDragEnd(event, sortedTasks, setTasks)}
               onDragStart={handleDragStart}
-              onDragOver={(e) => handleDragOver(e, tasks, setTasks)}
+              onDragOver={(event) => handleDragOver(event)}
               collisionDetection={closestCorners}
               sensors={sensors}
             >
@@ -165,12 +175,17 @@ export const Board: React.FC<Props> = ({
                   onColumnUpdate={handleColumnUpdate}
                   onColumnDelete={handleColumnDelete}
                   onColumnHide={handleColumnHide}
+                  isOver={overColumnId === column.id}
                 />
               ))}
 
               <DragOverlay>
                 {activeTask && (
-                  <TaskItem item={activeTask} projectName={projectName} />
+                  <TaskItem
+                    item={activeTask}
+                    projectName={projectName}
+                    index={0}
+                  />
                 )}
               </DragOverlay>
             </DndContext>
@@ -189,8 +204,9 @@ export const Board: React.FC<Props> = ({
               </Button>
             }
           />
+
+          <TaskDetailsDrawer />
         </div>
-        <TaskDetailsDrawer />
       </div>
     </TaskDetailsProvider>
   );

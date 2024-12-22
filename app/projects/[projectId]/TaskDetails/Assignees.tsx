@@ -17,13 +17,14 @@ import { Settings } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useParams } from 'next/navigation';
+import { UserCard } from '@/components/UserCard';
 
 export const Assignees = () => {
   const params = useParams();
   const { selectedTask } = useTaskDetails();
   const { members } = useProjectQueries(params.projectId as string);
   const { task, updateAssignees } = useTaskQueries(selectedTask?.id || '');
-  const { userId, user } = useCurrentUser();
+  const { user } = useCurrentUser();
 
   const [filter, setFilter] = useState('');
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
@@ -39,9 +40,9 @@ export const Assignees = () => {
   // Combine project members with current user if not already included
   const allMembers = useMemo(() => {
     if (!members || !user) return members;
-    const isCurrentUserMember = members.some((m) => m.id === userId);
+    const isCurrentUserMember = members.some((m) => m.id === user.id);
     return isCurrentUserMember ? members : [...members, user];
-  }, [members, user, userId]);
+  }, [members, user]);
 
   const handleAssigneeToggle = (userId: string) => {
     setSelectedAssignees((prev) => {
@@ -64,14 +65,14 @@ export const Assignees = () => {
   };
 
   const handleAssignSelf = () => {
-    if (userId) {
-      setSelectedAssignees([userId]);
-      updateAssignees([userId]);
+    if (user?.id) {
+      setSelectedAssignees([user.id]);
+      updateAssignees([user.id]);
     }
   };
 
   const filteredMembers = allMembers?.filter((member) =>
-    member.name.toLowerCase().includes(filter.toLowerCase())
+    member.name?.toLowerCase().includes(filter.toLowerCase())
   );
 
   const isAssigned = (userId: string) => selectedAssignees.includes(userId);
@@ -97,15 +98,17 @@ export const Assignees = () => {
               <div
                 key={member.id}
                 className="flex items-center hover:cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900 p-1 text-xs"
-                onClick={() => handleAssigneeToggle(member.id)}
+                onClick={() => handleAssigneeToggle(member.id || '')}
               >
                 <Checkbox
-                  checked={isAssigned(member.id)}
+                  checked={isAssigned(member.id || '')}
                   className="w-4 h-4 mr-4 rounded-sm bg-gray-200 dark:bg-black border border-gray-300 dark:border-gray-900"
                 />
                 <Avatar className="w-4 h-4 mr-2">
                   <AvatarImage src={member.avatar} />
-                  <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback>
+                    {member.name?.charAt(0) || ''}
+                  </AvatarFallback>
                 </Avatar>
                 <span>{member.name}</span>
               </div>
@@ -117,13 +120,14 @@ export const Assignees = () => {
         {task?.assignees && task.assignees.length > 0 ? (
           <div className="space-y-2">
             {task.assignees.map((assignee) => (
-              <div key={assignee.id} className="flex items-center gap-1">
-                <Avatar className="w-4 h-4">
-                  <AvatarImage src={assignee.avatar} />
-                  <AvatarFallback>{assignee.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <span>{assignee.name}</span>
-              </div>
+              <UserCard
+                key={assignee.id}
+                id={assignee.id}
+                name={assignee.name}
+                avatarUrl={assignee.avatar}
+                description={assignee.description}
+                links={assignee.links}
+              />
             ))}
           </div>
         ) : (

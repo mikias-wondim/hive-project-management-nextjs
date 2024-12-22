@@ -95,9 +95,9 @@ export const CreateProjectModal = ({ projectDetails }: Props) => {
       const supabase = createClient();
 
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
 
       const projectData = {
         ...projectDetails,
@@ -111,9 +111,9 @@ export const CreateProjectModal = ({ projectDetails }: Props) => {
             }),
       };
 
-      const project = await projects.createProject(
+      const project = await projects.management.create(
         projectData as ProjectWithOptions,
-        user.id
+        session.user.id
       );
 
       toast({

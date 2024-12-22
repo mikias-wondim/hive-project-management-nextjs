@@ -19,9 +19,10 @@ import { prefetchTask } from '@/hooks/useTaskQueries';
 interface Props {
   item: ITaskWithOptions;
   projectName: string;
+  index: number;
 }
 
-export const TaskItem = ({ item, projectName }: Props) => {
+export const TaskItem = ({ item, projectName, index }: Props) => {
   const queryClient = useQueryClient();
   const { openDrawer } = useTaskDetails();
   const {
@@ -36,6 +37,7 @@ export const TaskItem = ({ item, projectName }: Props) => {
     data: {
       type: 'task',
       task: item,
+      position: index,
     },
   });
   const style = {
@@ -72,6 +74,9 @@ export const TaskItem = ({ item, projectName }: Props) => {
         <div className="flex justify-between">
           <span className="text-[11px] text-gray-400 dark:text-gray-400">
             {projectName}
+            <p className="text-xs text-gray-400 dark:text-gray-400">
+              {item.id}
+            </p>
           </span>
           <TooltipProvider>
             <Tooltip>

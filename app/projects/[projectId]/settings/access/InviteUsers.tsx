@@ -40,13 +40,13 @@ export const InviteUsers = ({
   useEffect(() => {
     async function getUser() {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
         const { data } = await supabase
           .from('users')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', session.user.id)
           .single();
         setCurrentUser(data);
       }
