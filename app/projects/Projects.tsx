@@ -48,7 +48,7 @@ export const Projects = ({
     if (!projectToClose) return;
 
     try {
-      await projects.closeProject(projectToClose);
+      await projects.management.close(projectToClose);
       setAvailableProjects((prev) =>
         prev.map((project) =>
           project.id === projectToClose ? { ...project, closed: true } : project
@@ -72,7 +72,7 @@ export const Projects = ({
   const handleReopenProject = async () => {
     if (!projectToReopen) return;
     try {
-      await projects.reopenProject(projectToReopen);
+      await projects.management.reopen(projectToReopen);
       setAvailableProjects((prev) =>
         prev.map((project) =>
           project.id === projectToReopen
@@ -98,7 +98,7 @@ export const Projects = ({
   const handleDeleteProject = async () => {
     if (!projectToDelete) return;
     try {
-      await projects.deleteProject(projectToDelete.id);
+      await projects.management.delete(projectToDelete.id);
       setAvailableProjects((prev) =>
         prev.filter((project) => project.id !== projectToDelete.id)
       );
