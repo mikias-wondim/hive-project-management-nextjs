@@ -1,11 +1,10 @@
-import { UserAvatar } from '@/components/Avatar';
 import { CustomFieldTagRenderer } from '@/components/CustomFieldTagRenderer';
 import { LabelBadge } from '@/components/LabelBadge';
 import { UserCard } from '@/components/UserCard';
 import { labels, statuses } from '@/mock-data';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import React, { FC } from 'react';
+import { FC } from 'react';
 
 // Helper components for each activity type
 const User = ({ id }: { id: string }) => {

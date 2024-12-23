@@ -12,9 +12,9 @@ import Link from 'next/link';
 export default async function AuthErrorPage({
   searchParams,
 }: {
-  searchParams: { error?: string };
+  searchParams: Promise<{ error?: string }>;
 }) {
-  const errorMessage = searchParams?.error || 'This could be due to:';
+  const { error: errorMessage } = await searchParams;
 
   return (
     <div className="flex items-center justify-center h-minus-135">

@@ -1,14 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Ellipsis, LineChart, Settings } from 'lucide-react';
-import Link from 'next/link';
-import { Board } from './Board';
 import { ProjectDetails } from './ProjectDetails';
 
 interface Props {
