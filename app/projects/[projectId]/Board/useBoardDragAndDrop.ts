@@ -1,5 +1,6 @@
-import { useProjectQueries } from '@/hooks/useProjectQueries';
+import { toast } from '@/components/ui/use-toast';
 import { canMoveTask, moveTaskDown, moveTaskUp } from '@/utils/move-task';
+import { tasks as tasksUtils } from '@/utils/tasks';
 import {
   DragEndEvent,
   DragOverEvent,
@@ -10,21 +11,28 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { arrayMove } from '@dnd-kit/sortable';
 import { useState } from 'react';
-import { tasks as tasksUtils } from '@/utils/tasks';
-import { toast } from '@/components/ui/use-toast';
 
 type SetTasksFunction = React.Dispatch<
   React.SetStateAction<ITaskWithOptions[]>
 >;
 
-export const useBoardDragAndDrop = (projectId: string) => {
-  const [targetColumnId, setTargetColumnId] = useState<string | null>(null);
+interface DragTaskContext {
+  tasks: ITaskWithOptions[];
+  setTasks: SetTasksFunction;
+  activeId: string | number;
+  overId: string | number;
+  overColumnId: string | null;
+  active: any;
+  over: any;
+  overPosition: number;
+  activePosition: number;
+}
+
+export const useBoardDragAndDrop = () => {
   const [overColumnId, setOverColumnId] = useState<string | null>(null);
   const [activeTask, setActiveTask] = useState<ITaskWithOptions | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
-  const { reloadProjectTasks } = useProjectQueries(projectId);
 
   const pointerSensor = useSensor(PointerSensor, {
     activationConstraint: {
@@ -47,16 +55,344 @@ export const useBoardDragAndDrop = (projectId: string) => {
 
   const sensors = useSensors(pointerSensor, mouseSensor, touchSensor);
 
-  // Helper function to calculate new position between two values
-  const calculateNewPosition = (before: number, after: number): number => {
-    return Math.floor((before + after) / 2);
-  };
-
   // Set the active task when dragging starts
   const handleDragStart = (event: DragStartEvent) => {
     if (event.active.data.current?.type === 'task') {
       setActiveTask(event.active.data.current?.task);
       return;
+    }
+  };
+  //get position for priority item drag
+  const getPriorityTaskPositionOnNonEmptyColumn = (
+    tasks: ITaskWithOptions[],
+    active: any
+  ) => {
+    const columnTasks = tasks.filter((task) => task.status_id === overColumnId);
+
+    if (columnTasks.some((item) => item.priority)) {
+      const tasksWithHigherPriority = columnTasks.filter(
+        (task) =>
+          (task.priority?.order ?? 0) >
+          (active.data.current?.task.priority?.order ?? 0)
+      );
+
+      const tasksWithLowerPriority = columnTasks.filter(
+        (task) =>
+          task.priority?.order === active.data.current?.task.priority?.order - 1
+      );
+
+      const tasksWithSamePriority = columnTasks.filter(
+        (task) =>
+          task.priority?.order === active.data.current?.task.priority?.order
+      );
+
+      if (tasksWithSamePriority.length > 0) {
+        const lastTaskWithSamePriority =
+          tasksWithSamePriority[tasksWithSamePriority.length - 1];
+
+        const index = columnTasks.findIndex(
+          (task) => task.id === lastTaskWithSamePriority?.id
+        );
+
+        return moveTaskDown(
+          index,
+          lastTaskWithSamePriority?.id ?? '',
+          overColumnId ?? '',
+          tasks
+        );
+      } else if (tasksWithHigherPriority.length > 0) {
+        const lastTaskWithHigherPriority =
+          tasksWithHigherPriority[tasksWithHigherPriority.length - 1];
+        const index = columnTasks.findIndex(
+          (task) => task.id === lastTaskWithHigherPriority?.id
+        );
+        return moveTaskDown(
+          index,
+          lastTaskWithHigherPriority?.id ?? '',
+          overColumnId ?? '',
+          tasks
+        );
+      } else if (tasksWithLowerPriority.length > 0) {
+        const targetTaskWithLowerPriority = tasksWithLowerPriority[0];
+        const index = columnTasks.findIndex(
+          (task) => task.id === targetTaskWithLowerPriority?.id
+        );
+        return moveTaskUp(
+          index,
+          targetTaskWithLowerPriority?.id ?? '',
+          overColumnId ?? '',
+          tasks
+        );
+      } else {
+        return (columnTasks[0]?.statusPosition ?? 0) + 100;
+      }
+    } else {
+      return (columnTasks[0]?.statusPosition ?? 0) + 100;
+    }
+    // ---------------------------
+  };
+  // Handle task movement within the same column
+  const handleSameColumnDrag = async (context: DragTaskContext) => {
+    const {
+      tasks,
+      setTasks,
+      activeId,
+      overId,
+      overColumnId,
+      active,
+      over,
+      overPosition,
+      activePosition,
+    } = context;
+
+    // Check priority constraints
+    const overTask: ITaskWithOptions = over.data.current?.task;
+    const activeTask: ITaskWithOptions = active.data.current?.task;
+    if (!canMoveTask(overTask, activeTask)) {
+      setOverColumnId(null);
+      return;
+    }
+
+    // Calculate new position based on movement direction
+    const newStatusPosition =
+      activePosition > overPosition
+        ? moveTaskUp(overPosition, overId as string, overColumnId ?? '', tasks)
+        : moveTaskDown(
+            overPosition,
+            overId as string,
+            overColumnId ?? '',
+            tasks
+          );
+
+    // Update task position
+    const activeIndex = tasks.findIndex((item) => item.id === activeId);
+    tasks[activeIndex].statusPosition = newStatusPosition;
+    setTasks([...tasks]);
+    setOverColumnId(null);
+
+    try {
+      await tasksUtils.board.updatePosition(
+        activeId as string,
+        newStatusPosition as number
+      );
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to move task. Please try again.',
+      });
+    }
+  };
+
+  // Handle task movement between different columns with priority considerations
+  const handleDifferentColumnDrag = async (context: DragTaskContext) => {
+    const { tasks, setTasks, activeId, overColumnId, active, over } = context;
+    let newStatusPosition;
+
+    const columnTasks = tasks.filter((task) => task.status_id === overColumnId);
+    const activePriority = active.data.current?.task.priority;
+    const overPriority = over.data.current?.task.priority;
+
+    // Case 1: Moving non-priority task to priority section
+    if (!activePriority && overPriority) {
+      newStatusPosition = handleNonPriorityToPriorityMove(
+        columnTasks,
+        overColumnId,
+        tasks
+      );
+    }
+    // Case 2: Moving priority task to non-priority section
+    else if (activePriority && !overPriority) {
+      newStatusPosition = getPriorityTaskPositionOnNonEmptyColumn(
+        tasks,
+        active
+      );
+    }
+    // Case 3: Moving between different priority levels
+    else if (activePriority?.order > overPriority?.order) {
+      newStatusPosition = handlePriorityLevelMove(
+        columnTasks,
+        active,
+        overColumnId,
+        tasks
+      );
+    }
+    // Case 4: Default position based on cursor location
+    else {
+      newStatusPosition = handleDefaultPositionMove(context);
+    }
+
+    // Update task position and status
+    const activeIndex = tasks.findIndex((item) => item.id === activeId);
+    tasks[activeIndex].statusPosition = newStatusPosition;
+    tasks[activeIndex].status_id = overColumnId as string;
+    setTasks([...tasks]);
+    setOverColumnId(null);
+
+    try {
+      await tasksUtils.board.moveTask(
+        activeId as string,
+        overColumnId as string,
+        newStatusPosition as number
+      );
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to move task. Please try again.',
+      });
+    }
+  };
+
+  // Handle task movement to an empty column
+  const handleEmptyColumnDrag = async (context: DragTaskContext) => {
+    const { tasks, setTasks, activeId, overId, overColumnId } = context;
+
+    const activeIndex = tasks.findIndex((item) => item.id === activeId);
+    tasks[activeIndex].statusPosition = 10000;
+    tasks[activeIndex].status_id = overColumnId as string;
+    setTasks([...tasks]);
+    setOverColumnId(null);
+
+    try {
+      await tasksUtils.board.moveTask(
+        activeId as string,
+        overColumnId ?? '',
+        10000
+      );
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to move task. Please try again.',
+      });
+    }
+  };
+
+  // Helper functions for different movement scenarios
+  const handleNonPriorityToPriorityMove = (
+    columnTasks: ITaskWithOptions[],
+    overColumnId: string | null,
+    tasks: ITaskWithOptions[]
+  ) => {
+    const firstNonPriorityTask = columnTasks.find((task) => !task.priority);
+    const firstNonPriorityTaskIndex = columnTasks.findIndex(
+      (task) => task.id === firstNonPriorityTask?.id
+    );
+
+    if (firstNonPriorityTask) {
+      return moveTaskUp(
+        firstNonPriorityTaskIndex,
+        firstNonPriorityTask?.id ?? '',
+        overColumnId ?? '',
+        tasks
+      );
+    } else {
+      const lastTaskIndex = columnTasks.length - 1;
+      return moveTaskDown(
+        lastTaskIndex,
+        columnTasks[lastTaskIndex].id ?? '',
+        overColumnId ?? '',
+        tasks
+      );
+    }
+  };
+
+  const handlePriorityLevelMove = (
+    columnTasks: ITaskWithOptions[],
+    active: any,
+    overColumnId: string | null,
+    tasks: ITaskWithOptions[]
+  ) => {
+    const tasksWithLowerPriority = columnTasks.filter(
+      (task) =>
+        task.priority?.order === active.data.current?.task.priority?.order - 1
+    );
+    const firstTaskWithLowerPriority = tasksWithLowerPriority[0];
+    const firstTaskWithLowerPriorityIndex = columnTasks.findIndex(
+      (task) => task.id === firstTaskWithLowerPriority?.id
+    );
+
+    return moveTaskUp(
+      firstTaskWithLowerPriorityIndex,
+      firstTaskWithLowerPriority?.id ?? '',
+      overColumnId ?? '',
+      tasks
+    );
+  };
+
+  const handleDefaultPositionMove = (context: DragTaskContext) => {
+    const { active, over, overPosition, overColumnId, overId, tasks } = context;
+    const activeRect = active.rect.current.translated;
+    const overRect = over.rect;
+    const activeMidY = (activeRect?.top ?? 0) + (activeRect?.height ?? 0) / 2;
+    const overMidY = (overRect?.top ?? 0) + (overRect?.height ?? 0) / 2;
+
+    return activeMidY < overMidY
+      ? moveTaskUp(overPosition, overId as string, overColumnId ?? '', tasks)
+      : moveTaskDown(overPosition, overId as string, overColumnId ?? '', tasks);
+  };
+
+  const handleNonPriorityColumnDrag = async (context: DragTaskContext) => {
+    const { tasks, setTasks, activeId, overColumnId } = context;
+    const columnTasks = tasks.filter((task) => task.status_id === overColumnId);
+
+    const lastTaskIndex = columnTasks.length - 1;
+    const lastTaskId = columnTasks[lastTaskIndex].id;
+    const newStatusPosition = moveTaskDown(
+      lastTaskIndex,
+      lastTaskId ?? '',
+      overColumnId ?? '',
+      tasks
+    );
+
+    const activeIndex = tasks.findIndex((item) => item.id === activeId);
+    tasks[activeIndex].statusPosition = newStatusPosition;
+    tasks[activeIndex].status_id = overColumnId as string;
+    setTasks([...tasks]);
+    setOverColumnId(null);
+
+    try {
+      await tasksUtils.board.moveTask(
+        activeId as string,
+        overColumnId as string,
+        newStatusPosition ?? 0
+      );
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to move task. Please try again.',
+      });
+    }
+  };
+
+  const handlePriorityColumnDrag = async (context: DragTaskContext) => {
+    const { tasks, setTasks, activeId, overColumnId, active } = context;
+
+    const newStatusPosition = getPriorityTaskPositionOnNonEmptyColumn(
+      tasks,
+      active
+    );
+
+    const activeIndex = tasks.findIndex((item) => item.id === activeId);
+    tasks[activeIndex].statusPosition = newStatusPosition;
+    tasks[activeIndex].status_id = overColumnId as string;
+    setTasks([...tasks]);
+    setOverColumnId(null);
+
+    try {
+      await tasksUtils.board.moveTask(
+        activeId as string,
+        overColumnId as string,
+        newStatusPosition ?? 0
+      );
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to move task. Please try again.',
+      });
     }
   };
 
@@ -67,6 +403,7 @@ export const useBoardDragAndDrop = (projectId: string) => {
   ) => {
     const { active, over } = event;
 
+    // Early return if invalid drag
     if (
       !over ||
       active.data.current?.type !== 'task' ||
@@ -76,399 +413,64 @@ export const useBoardDragAndDrop = (projectId: string) => {
       return;
     }
 
-    const activeId = active.id;
-    const overId = over.id;
+    const context: DragTaskContext = {
+      tasks,
+      setTasks,
+      activeId: active.id,
+      overId: over.id,
+      overColumnId,
+      active,
+      over,
+      overPosition: event.over?.data?.current?.position,
+      activePosition: event.active?.data?.current?.position,
+    };
 
-    const overPosition = event.over?.data?.current?.position;
-    const activePosition = event.active?.data?.current?.position;
+    // Handle different drag scenarios
+    if (over.data.current?.type === 'task') {
+      const isSameColumn =
+        over.data.current?.task.status_id ===
+        active.data.current?.task.status_id;
 
-    const isOverATaskInSameColumn =
-      over.data.current?.type === 'task' &&
-      over.data.current?.task.status_id === active.data.current?.task.status_id;
-
-    if (isOverATaskInSameColumn) {
-      // we need to check if there are priority constraints
-      const overTask: ITaskWithOptions = over.data.current?.task;
-      const activeTask: ITaskWithOptions = active.data.current?.task;
-      const cannotMove = !canMoveTask(overTask, activeTask);
-      if (cannotMove) {
-        setOverColumnId(null);
-        return;
-      }
-
-      let newStatusPosition;
-      // if active position is greater than over position, we are moving task up
-      if (activePosition > overPosition) {
-        newStatusPosition = moveTaskUp(
-          overPosition,
-          overId as string,
-          overColumnId ?? '',
-          tasks
-        );
-      }
-
-      // if active position is less than over position, we are moving task down
-      if (activePosition < overPosition) {
-        newStatusPosition = moveTaskDown(
-          overPosition,
-          overId as string,
-          overColumnId ?? '',
-          tasks
-        );
-      }
-
-      const activeIndex = tasks.findIndex((item) => item.id === activeId);
-      tasks[activeIndex].statusPosition = newStatusPosition;
-      setTasks([...tasks]);
-      setOverColumnId(null);
-
-      try {
-        await tasksUtils.board.updatePosition(
-          activeId as string,
-          newStatusPosition as number
-        );
-      } catch (error) {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to move task. Please try again.',
-        });
-      }
-
-      return;
-    }
-
-    const isOverATaskInDifferentColumn =
-      over.data.current?.type === 'task' &&
-      over.data.current?.task.status_id !== active.data.current?.task.status_id;
-
-    if (isOverATaskInDifferentColumn) {
-      let newStatusPosition;
-
-      if (
-        !active.data.current?.task.priority &&
-        over.data.current?.task.priority
-      ) {
-        // insert below
-        const columnTasks = tasks.filter(
-          (task) => task.status_id === overColumnId
-        );
-
-        const firstNonPriorityTask = columnTasks.find((task) => !task.priority);
-        //  find index of firstNonPriorityTask as the position of the task in the column
-        const firstNonPriorityTaskIndex = columnTasks.findIndex(
-          (task) => task.id === firstNonPriorityTask?.id
-        );
-
-        if (firstNonPriorityTask) {
-          newStatusPosition = moveTaskUp(
-            firstNonPriorityTaskIndex,
-            firstNonPriorityTask?.id ?? '',
-            overColumnId ?? '',
-            tasks
-          );
-        } else {
-          const lastTaskIndex = columnTasks.length - 1;
-          const lastTaskId = columnTasks[lastTaskIndex].id;
-          newStatusPosition = moveTaskDown(
-            lastTaskIndex,
-            lastTaskId ?? '',
-            overColumnId ?? '',
-            tasks
-          );
-        }
-      } else if (
-        active.data.current?.task.priority &&
-        !over.data.current?.task.priority
-      ) {
-        const columnTasks = tasks.filter(
-          (task) => task.status_id === overColumnId
-        );
-        // find last priority task in the column
-        const priorityTasks = columnTasks.filter((task) => task.priority);
-        const lastPriorityTask = priorityTasks[priorityTasks.length - 1];
-        const astPriorityTaskIndex = columnTasks.findIndex(
-          (task) => task.id === lastPriorityTask?.id
-        );
-
-        if (lastPriorityTask) {
-          newStatusPosition = moveTaskDown(
-            astPriorityTaskIndex,
-            lastPriorityTask.id ?? '',
-            overColumnId ?? '',
-            tasks
-          );
-        } else {
-          // place it as the first task in the column
-          newStatusPosition = moveTaskDown(
-            0,
-            columnTasks[0].id ?? '',
-            overColumnId ?? '',
-            tasks
-          );
-        }
-      } else if (
-        (active.data.current?.task.priority?.order as number) >
-        (over.data.current?.task.priority?.order as number)
-      ) {
-        const columnTasks = tasks.filter(
-          (task) => task.status_id === overColumnId
-        );
-        //  find all tasks in the column whose priority order is one less than the active task's priority order
-        const tasksWithLowerPriority = columnTasks.filter(
-          (task) =>
-            task.priority?.order ===
-            active.data.current?.task.priority?.order - 1
-        );
-        // get the first task in the above filtered tasks
-        const firstTaskWithLowerPriority = tasksWithLowerPriority[0];
-
-        // use the task id to get the index from the column tasks.
-        const firstTaskWithLowerPriorityIndex = columnTasks.findIndex(
-          (task) => task.id === firstTaskWithLowerPriority?.id
-        );
-
-        // calculate new position with the index and the task id by moving the task up
-        newStatusPosition = moveTaskUp(
-          firstTaskWithLowerPriorityIndex,
-          firstTaskWithLowerPriority?.id ?? '',
-          overColumnId ?? '',
-          tasks
-        );
+      if (isSameColumn) {
+        await handleSameColumnDrag(context);
       } else {
-        const activeRect = active.rect.current.translated;
-        const overRect = over.rect;
-
-        // Calculate the midpoints of the active and over elements
-        const activeMidY =
-          (activeRect?.top ?? 0) + (activeRect?.height ?? 0) / 2;
-        const overMidY = (overRect?.top ?? 0) + (overRect?.height ?? 0) / 2;
-
-        if (activeMidY < overMidY) {
-          //Insert above
-          newStatusPosition = moveTaskUp(
-            overPosition,
-            overId as string,
-            overColumnId ?? '',
-            tasks
-          );
-        } else {
-          // insert below
-          newStatusPosition = moveTaskDown(
-            overPosition,
-            overId as string,
-            overColumnId ?? '',
-            tasks
-          );
-        }
+        await handleDifferentColumnDrag(context);
       }
-
-      const activeIndex = tasks.findIndex((item) => item.id === activeId);
-      tasks[activeIndex].statusPosition = newStatusPosition;
-      tasks[activeIndex].status_id = overColumnId as string;
-      setTasks([...tasks]);
-      setOverColumnId(null);
-
-      try {
-        await tasksUtils.board.moveTask(
-          activeId as string,
-          overColumnId as string,
-          newStatusPosition as number
-        );
-      } catch (error) {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to move task. Please try again.',
-        });
-      }
-
-      return;
-    }
-
-    const isOverAColumn =
-      active.data.current?.type === 'task' &&
-      over.data.current?.type === 'column';
-
-    if (isOverAColumn) {
+    } else if (over.data.current?.type === 'column') {
       const columnTasks = tasks.filter(
         (task) => task.status_id === overColumnId
       );
 
-      //  case 1: no tasks in column
       if (columnTasks.length === 0) {
-        const activeIndex = tasks.findIndex((item) => item.id === activeId);
-        tasks[activeIndex].statusPosition = 10000;
-        tasks[activeIndex].status_id = overColumnId as string;
-        setTasks([...tasks]);
-        setOverColumnId(null);
-
-        try {
-          await tasksUtils.board.moveTask(
-            activeId as string,
-            overColumnId ?? '',
-            10000
-          );
-        } catch (error) {
-          toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Failed to move task. Please try again.',
-          });
-        }
-
-        return;
-      }
-
-      //  case 2: tasks in column, but active task has no priority. place it at the bottom of the column
-      else if (columnTasks.length > 0 && !active.data.current?.task.priority) {
-        const lastTaskIndex = columnTasks.length - 1;
-        const lastTaskId = columnTasks[lastTaskIndex].id;
-        const newStatusPosition = moveTaskDown(
-          lastTaskIndex,
-          lastTaskId ?? '',
-          overColumnId ?? '',
-          tasks
-        );
-
-        const activeIndex = tasks.findIndex((item) => item.id === activeId);
-        tasks[activeIndex].statusPosition = newStatusPosition;
-        tasks[activeIndex].status_id = overColumnId as string;
-        setTasks([...tasks]);
-        setOverColumnId(null);
-
-        try {
-          await tasksUtils.board.moveTask(
-            activeId as string,
-            overColumnId as string,
-            newStatusPosition ?? 0
-          );
-        } catch (error) {
-          toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Failed to move task. Please try again.',
-          });
-        }
-        setOverColumnId(null);
-        return;
-      }
-      //  case 3: tasks in column but active task has priority
-      else if (columnTasks.length > 0 && active.data.current?.task.priority) {
-        //  find all tasks in the column whose priority order is one less than the active task's priority order
-        let newStatusPosition;
-
-        const tasksWithLowerPriority = columnTasks.filter(
-          (task) =>
-            task.priority?.order ===
-            active.data.current?.task.priority?.order - 1
-        );
-
-        const tasksWithSamePriority = columnTasks.filter(
-          (task) =>
-            task.priority?.order === active.data.current?.task.priority?.order
-        );
-
-        if (tasksWithLowerPriority.length > 0) {
-          // get the first task in the above filtered tasks
-          const targetTaskWithLowerPriority = tasksWithLowerPriority[0];
-          const index = columnTasks.findIndex(
-            (task) => task.id === targetTaskWithLowerPriority?.id
-          );
-          newStatusPosition = moveTaskUp(
-            index,
-            targetTaskWithLowerPriority?.id ?? '',
-            overColumnId ?? '',
-            tasks
-          );
-        } else if (tasksWithSamePriority.length > 0) {
-          // get the last task in the above filtered tasks
-          const columnTaskWithSamePriority =
-            tasksWithSamePriority[tasksWithSamePriority.length - 1];
-
-          const index = columnTasks.findIndex(
-            (task) => task.id === columnTaskWithSamePriority?.id
-          );
-
-          newStatusPosition = moveTaskUp(
-            index,
-            columnTaskWithSamePriority?.id ?? '',
-            overColumnId ?? '',
-            tasks
-          );
-        } else {
-          const targetTaskWithLowerPriority =
-            columnTasks[columnTasks.length - 1];
-          const index = columnTasks.findIndex(
-            (task) => task.id === targetTaskWithLowerPriority?.id
-          );
-
-          newStatusPosition = moveTaskDown(
-            index,
-            targetTaskWithLowerPriority?.id ?? '',
-            overColumnId ?? '',
-            tasks
-          );
-        }
-
-        const activeIndex = tasks.findIndex((item) => item.id === activeId);
-        tasks[activeIndex].statusPosition = newStatusPosition;
-        tasks[activeIndex].status_id = overColumnId as string;
-        setTasks([...tasks]);
-        setOverColumnId(null);
-
-        try {
-          await tasksUtils.board.moveTask(
-            activeId as string,
-            overColumnId as string,
-            newStatusPosition ?? 0
-          );
-        } catch (error) {
-          toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Failed to move task. Please try again.',
-          });
-        }
+        await handleEmptyColumnDrag(context);
+      } else if (!active.data.current?.task.priority) {
+        await handleNonPriorityColumnDrag(context);
+      } else {
+        await handlePriorityColumnDrag(context);
       }
     }
   };
 
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
+    if (!over || active.id === over.id || active.data.current?.type !== 'task')
+      return;
 
-    if (!over) return;
+    const isOverTask = over.data.current?.type === 'task';
+    const isOverEmptyColumnArea = over.data.current?.type === 'column';
 
-    const activeId = active.id;
-    const overId = over.id;
+    if (isOverTask) {
+      const isSameColumn =
+        over.data.current?.task.status_id ===
+        active.data.current?.task.status_id;
 
-    if (activeId === overId) return;
-
-    const isActiveItemATask = active.data.current?.type === 'task';
-    if (!isActiveItemATask) return;
-
-    const isOverATaskInSameColumn =
-      over.data.current?.type === 'task' &&
-      over.data.current?.task.status_id === active.data.current?.task.status_id;
-
-    const isOverATaskInDifferentColumn =
-      over.data.current?.type === 'task' &&
-      over.data.current?.task.status_id !== active.data.current?.task.status_id;
-
-    const isOverAColumn =
-      active.data.current?.type === 'task' &&
-      over.data.current?.type === 'column';
-
-    if (isOverATaskInSameColumn) {
-      setOverColumnId(active.data.current?.task.status_id);
-    }
-
-    if (isOverATaskInDifferentColumn) {
-      setOverColumnId(over.data.current?.task.status_id);
-    }
-
-    if (isOverAColumn) {
-      setOverColumnId(overId as string);
+      setOverColumnId(
+        isSameColumn
+          ? active.data.current?.task.status_id
+          : over.data.current?.task.status_id
+      );
+    } else if (isOverEmptyColumnArea) {
+      setOverColumnId(over.id as string);
     }
   };
 

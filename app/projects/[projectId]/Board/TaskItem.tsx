@@ -68,15 +68,11 @@ export const TaskItem = ({ item, projectName, index }: Props) => {
         style={style}
         {...attributes}
         {...listeners}
-        className="bg-white dark:bg-gray-900 px-4 py-3 mx-2 rounded-md border border-gray-300 dark:border-gray-700 text-sm"
-        onClick={handleClick}
+        className="bg-white dark:bg-gray-900 px-4 py-3 mx-2 rounded-md border border-gray-300 dark:border-gray-700 text-sm cursor-grab"
       >
         <div className="flex justify-between">
           <span className="text-[11px] text-gray-400 dark:text-gray-400">
             {projectName}
-            <p className="text-xs text-gray-400 dark:text-gray-400">
-              {item.id}
-            </p>
           </span>
           <TooltipProvider>
             <Tooltip>
@@ -97,7 +93,10 @@ export const TaskItem = ({ item, projectName, index }: Props) => {
             </Tooltip>
           </TooltipProvider>
         </div>
-        <div className="my-2">
+        <div
+          onClick={handleClick}
+          className="my-2 cursor-pointer hover:underline w-fit"
+        >
           <p>{item.title}</p>
         </div>
         <div className="space-x-2">

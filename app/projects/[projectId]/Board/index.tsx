@@ -42,7 +42,7 @@ export const Board: React.FC<Props> = ({
     handleDragStart,
     handleDragEnd,
     handleDragOver,
-  } = useBoardDragAndDrop(projectId);
+  } = useBoardDragAndDrop();
 
   useEffect(() => {
     setTasks(projectTasks || []);
