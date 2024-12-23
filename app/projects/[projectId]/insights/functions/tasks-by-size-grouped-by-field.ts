@@ -25,7 +25,7 @@ function getTasksBySizeGroupedByField<T extends IField>(
 
   // Count tasks based on sizes and fields
   tasks.forEach((task) => {
-    const sizeEntry = sizeMap.get(task.size);
+    const sizeEntry = sizeMap.get(task.size as string);
     if (sizeEntry) {
       const taskField = task[fieldKey] as unknown as string[];
       if (!taskField || (Array.isArray(taskField) && taskField.length === 0)) {

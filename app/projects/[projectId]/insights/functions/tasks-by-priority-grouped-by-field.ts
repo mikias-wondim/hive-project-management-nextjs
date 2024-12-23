@@ -25,7 +25,7 @@ function getTasksByPriorityGroupedByField<T extends IField>(
 
   // Count tasks based on priorities and fields
   tasks.forEach((task) => {
-    const priorityEntry = priorityMap.get(task.priority);
+    const priorityEntry = priorityMap.get(task.priority || 'No priority');
     if (priorityEntry) {
       const taskField = task[fieldKey] as unknown as string[];
       if (!taskField || (Array.isArray(taskField) && taskField.length === 0)) {

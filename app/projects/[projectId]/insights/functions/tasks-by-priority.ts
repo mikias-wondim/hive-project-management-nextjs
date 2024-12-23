@@ -12,8 +12,11 @@ export function getTasksByPriority(
   priorities.forEach((priority) => priorityMap.set(priority.id, 0));
 
   tasks.forEach((task) => {
-    if (priorityMap.has(task.priority)) {
-      priorityMap.set(task.priority, (priorityMap.get(task.priority) || 0) + 1);
+    if (priorityMap.has(task.priority as string)) {
+      priorityMap.set(
+        task.priority as string,
+        (priorityMap.get(task.priority as string) || 0) + 1
+      );
     }
   });
 

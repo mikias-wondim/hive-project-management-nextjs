@@ -9,8 +9,11 @@ export function getTasksBySize(tasks: ITask[], sizes: ISize[]): ITasksBySize[] {
   sizes.forEach((size) => sizeMap.set(size.id, 0));
 
   tasks.forEach((task) => {
-    if (sizeMap.has(task.size)) {
-      sizeMap.set(task.size, (sizeMap.get(task.size) || 0) + 1);
+    if (sizeMap.has(task.size as string)) {
+      sizeMap.set(
+        task.size as string,
+        (sizeMap.get(task.size as string) || 0) + 1
+      );
     }
   });
 

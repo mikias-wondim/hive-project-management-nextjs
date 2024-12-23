@@ -154,6 +154,7 @@ export const priorities: IPriority[] = [
     created_at: new Date('2023-01-05T00:00:00Z'),
     updated_at: new Date('2023-01-06T00:00:00Z'),
     project_id: 'project-1',
+    order: 1,
   },
   {
     id: 'priority-2',
@@ -163,6 +164,7 @@ export const priorities: IPriority[] = [
     created_at: new Date('2023-01-05T00:00:00Z'),
     updated_at: new Date('2023-01-06T00:00:00Z'),
     project_id: 'project-1',
+    order: 2,
   },
 ];
 
@@ -175,6 +177,7 @@ export const sizes: ISize[] = [
     created_at: new Date('2023-01-05T00:00:00Z'),
     updated_at: new Date('2023-01-06T00:00:00Z'),
     project_id: 'project-1',
+    order: 1,
   },
   {
     id: 'size-2',
@@ -184,6 +187,7 @@ export const sizes: ISize[] = [
     created_at: new Date('2023-01-05T00:00:00Z'),
     updated_at: new Date('2023-01-06T00:00:00Z'),
     project_id: 'project-1',
+    order: 2,
   },
   {
     id: 'size-3',
@@ -193,6 +197,7 @@ export const sizes: ISize[] = [
     created_at: new Date('2023-01-05T00:00:00Z'),
     updated_at: new Date('2023-01-06T00:00:00Z'),
     project_id: 'project-1',
+    order: 3,
   },
 ];
 
@@ -211,6 +216,7 @@ export const tasks: ITask[] = [
     created_at: new Date('2023-01-05T00:00:00Z'),
     updated_at: new Date('2023-01-06T00:00:00Z'),
     created_by: 'user-2',
+    statusPosition: 1,
   },
   {
     id: 'task-2',
@@ -226,6 +232,7 @@ export const tasks: ITask[] = [
     created_at: new Date('2023-01-05T00:00:00Z'),
     updated_at: new Date('2023-01-06T00:00:00Z'),
     created_by: 'user-1',
+    statusPosition: 2,
   },
   {
     id: 'task-3',
@@ -241,6 +248,7 @@ export const tasks: ITask[] = [
     created_at: new Date('2023-01-30T00:00:00Z'),
     updated_at: new Date('2023-01-31T00:00:00Z'),
     created_by: 'user-1',
+    statusPosition: 3,
   },
   {
     id: 'task-4',
@@ -256,6 +264,7 @@ export const tasks: ITask[] = [
     created_at: new Date('2023-03-10T00:00:00Z'),
     updated_at: new Date('2023-03-11T00:00:00Z'),
     created_by: 'user-1',
+    statusPosition: 4,
   },
   {
     id: 'task-5',
@@ -271,6 +280,7 @@ export const tasks: ITask[] = [
     created_at: new Date('2023-04-01T00:00:00Z'),
     updated_at: new Date('2023-04-02T00:00:00Z'),
     created_by: 'user-1',
+    statusPosition: 5,
   },
   {
     id: 'task-6',
@@ -286,6 +296,7 @@ export const tasks: ITask[] = [
     created_at: new Date('2023-05-10T00:00:00Z'),
     updated_at: new Date('2023-05-11T00:00:00Z'),
     created_by: 'user-1',
+    statusPosition: 6,
   },
   {
     id: 'task-7',
@@ -301,6 +312,7 @@ export const tasks: ITask[] = [
     created_at: new Date('2023-06-15T00:00:00Z'),
     updated_at: new Date('2023-06-16T00:00:00Z'),
     created_by: 'user-1',
+    statusPosition: 7,
   },
   {
     id: 'task-8',
@@ -316,6 +328,7 @@ export const tasks: ITask[] = [
     created_at: new Date('2023-07-15T00:00:00Z'),
     updated_at: new Date('2023-07-16T00:00:00Z'),
     created_by: 'user-1',
+    statusPosition: 8,
   },
   {
     id: 'task-9',
@@ -331,6 +344,7 @@ export const tasks: ITask[] = [
     created_at: new Date('2023-08-05T00:00:00Z'),
     updated_at: new Date('2023-08-06T00:00:00Z'),
     created_by: 'user-1',
+    statusPosition: 9,
   },
   {
     id: 'task-10',
@@ -346,6 +360,7 @@ export const tasks: ITask[] = [
     created_at: new Date('2023-09-20T00:00:00Z'),
     updated_at: new Date('2023-09-21T00:00:00Z'),
     created_by: 'user-1',
+    statusPosition: 10,
   },
   {
     id: 'task-11',
@@ -361,6 +376,7 @@ export const tasks: ITask[] = [
     created_at: new Date('2023-10-10T00:00:00Z'),
     updated_at: new Date('2023-10-11T00:00:00Z'),
     created_by: 'user-1',
+    statusPosition: 11,
   },
   {
     id: 'task-12',
@@ -376,6 +392,7 @@ export const tasks: ITask[] = [
     created_at: new Date('2023-10-28T00:00:00Z'),
     updated_at: new Date('2023-10-29T00:00:00Z'),
     created_by: 'user-1',
+    statusPosition: 12,
   },
   {
     id: 'task-13',
@@ -391,6 +408,7 @@ export const tasks: ITask[] = [
     created_at: new Date('2023-08-05T00:00:00Z'),
     updated_at: new Date('2023-08-06T00:00:00Z'),
     created_by: 'user-1',
+    statusPosition: 13,
   },
   {
     id: 'task-14',
@@ -406,6 +424,7 @@ export const tasks: ITask[] = [
     created_at: new Date('2023-08-05T00:00:00Z'),
     updated_at: new Date('2023-08-06T00:00:00Z'),
     created_by: 'user-1',
+    statusPosition: 14,
   },
 ];
 
@@ -432,6 +451,7 @@ export const activities: IActivity[] = [
   {
     id: 'activity-1',
     created_at: new Date('2023-01-06T00:00:00Z'),
+    updated_at: new Date('2023-01-06T00:00:00Z'),
     user_id: 'user-1',
     task_id: 'task-1',
     content: [
@@ -447,6 +467,7 @@ export const activities: IActivity[] = [
   {
     id: 'activity-1',
     created_at: new Date('2023-01-08T00:00:00Z'),
+    updated_at: new Date('2023-01-08T00:00:00Z'),
     user_id: 'user-1',
     task_id: 'task-1',
     content: [

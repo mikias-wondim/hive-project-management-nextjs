@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { ProjectActions } from './ProjectActions';
 import { useProjectAccess } from '@/hooks/useProjectAccess';
+import { ProjectAction } from '@/consts';
 
 interface ProjectItemProps {
   project: IProject;
@@ -48,7 +49,7 @@ export const ProjectItem = ({
           {new Date(project.created_at).toDateString()}
         </p>
       </div>
-      {can('close_project') && (
+      {can(ProjectAction.CLOSE_PROJECT) && (
         <ProjectActions
           project={project}
           tab={tab}

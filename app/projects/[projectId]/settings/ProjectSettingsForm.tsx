@@ -47,7 +47,7 @@ export function ProjectSettingsForm({ project }: ProjectSettingsFormProps) {
   const handleUpdateProject = async () => {
     try {
       setIsSaving(true);
-      await projects.updateProject(project.id, formData);
+      await projects.management.update(project.id, formData);
       toast({
         title: 'Success',
         description: 'Project settings updated successfully',
@@ -65,7 +65,7 @@ export function ProjectSettingsForm({ project }: ProjectSettingsFormProps) {
 
   const handleCloseProject = async () => {
     try {
-      await projects.closeProject(project.id);
+      await projects.management.close(project.id);
       toast({
         title: 'Success',
         description: 'Project closed successfully',
@@ -82,7 +82,7 @@ export function ProjectSettingsForm({ project }: ProjectSettingsFormProps) {
 
   const handleDeleteProject = async () => {
     try {
-      await projects.deleteProject(project.id);
+      await projects.management.delete(project.id);
       useAccessStore.getState().reset();
       router.push('/projects');
     } catch (error) {

@@ -35,7 +35,7 @@ const LandingPage: React.FC = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [supabase.auth]);
 
   if (isLoading) {
     return null; // or a loading spinner
