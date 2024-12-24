@@ -5,9 +5,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { toast } from '@/components/ui/use-toast';
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
+import { useProjectQueries } from '@/hooks/useProjectQueries';
+import { useTaskQueries } from '@/hooks/useTaskQueries';
 import { Check, Copy, Ellipsis, ExternalLink, Pen, Trash } from 'lucide-react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useState } from 'react';
+import { useTaskDetails } from '../Board/TaskDetailsContext';
 
 interface Props {
   setIsEditing: (isEditing: boolean) => void;
@@ -15,6 +21,25 @@ interface Props {
 }
 export const TaskActionsMenu = ({ permalink, setIsEditing }: Props) => {
   const { isCopied, handleCopy } = useCopyToClipboard();
+  const { projectId } = useParams();
+  const { selectedTask, closeDrawer } = useTaskDetails();
+  const { deleteTask } = useTaskQueries(selectedTask?.id || '');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { reloadProjectTasks } = useProjectQueries(projectId as string);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    await deleteTask();
+    await reloadProjectTasks();
+    closeDrawer();
+
+    toast({
+      title: 'Task deleted',
+      description: 'The task has been deleted successfully',
+    });
+    setIsDeleting(false);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="ml-2">
@@ -47,9 +72,13 @@ export const TaskActionsMenu = ({ permalink, setIsEditing }: Props) => {
           </DropdownMenuItem>
         </Link>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-red-500 bg-transparent hover:bg-red-200 hover:dark:bg-red-950">
+        <DropdownMenuItem
+          onClick={handleDelete}
+          disabled={isDeleting}
+          className="text-red-500 bg-transparent hover:bg-red-200 hover:dark:bg-red-950"
+        >
           <Trash className="w-3 h-3 mr-2" />
-          Delete
+          {isDeleting ? 'Deleting...' : 'Delete'}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -14,25 +14,107 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { DatePicker } from './DatePicker';
 import { CustomFieldTagRenderer } from '@/components/CustomFieldTagRenderer';
+import { toast } from '@/components/ui/use-toast';
+import { tasks as tasksUtils } from '@/utils/tasks';
 
 export const Project = () => {
   const params = useParams();
   const { selectedTask, projectName, updateTaskSize, updateTaskPriority } =
     useTaskDetails();
-  const { statuses, priorities, sizes } = useProjectQueries(
+  const { projectTasks, statuses, priorities, sizes } = useProjectQueries(
     params.projectId as string
   );
   const { task, updatePriority, updateSize, updateDates } = useTaskQueries(
     selectedTask?.id || ''
   );
 
-  const handlePrioritySelect = (priorityId: string | null) => {
+  const calculateNewStatusPosition = (
+    tasks: ITaskWithOptions[],
+    newPriorityOrder: number | null,
+    currentStatusId: string
+  ): number => {
+    const columnTasks = tasks.filter(
+      (task) => task.status_id === currentStatusId
+    );
+
+    // If no priority (removing priority), place at bottom
+    if (!newPriorityOrder) {
+      const nonPriorityTasks = columnTasks.filter((task) => !task.priority);
+      if (nonPriorityTasks.length === 0) {
+        return (columnTasks[columnTasks.length - 1]?.statusPosition ?? 0) - 10;
+      }
+      return (
+        Math.min(...nonPriorityTasks.map((t) => t.statusPosition ?? 0)) - 10
+      );
+    }
+
+    // Find tasks with same or higher priority order
+    const tasksWithSameOrHigherPriority = columnTasks.filter(
+      (task) => (task.priority?.order ?? 0) >= newPriorityOrder
+    );
+
+    // Find tasks with same priority order
+    const tasksWithSamePriority = columnTasks.filter(
+      (task) => task.priority?.order === newPriorityOrder
+    );
+
+    // Find tasks with next lower priority order
+    const tasksWithNextLowerPriority = columnTasks.filter(
+      (task) => task.priority?.order === newPriorityOrder - 1
+    );
+
+    if (tasksWithSameOrHigherPriority.length === 0) {
+      // No tasks with same or higher priority, place at top
+      return (
+        (Math.max(...columnTasks.map((t) => t.statusPosition ?? 0)) ?? 0) + 100
+      );
+    }
+
+    if (tasksWithSamePriority.length > 0) {
+      // Place below the last task with same priority
+      const lastSamePriorityTask =
+        tasksWithSamePriority[tasksWithSamePriority.length - 1];
+      return (lastSamePriorityTask.statusPosition ?? 0) - 100;
+    }
+
+    if (tasksWithNextLowerPriority.length > 0) {
+      // Place above the first task with next lower priority
+      const firstNextLowerPriorityTask = tasksWithNextLowerPriority[0];
+      return (firstNextLowerPriorityTask.statusPosition ?? 0) + 100;
+    }
+
+    // Default: place at a reasonable position
+    return (
+      (Math.max(...columnTasks.map((t) => t.statusPosition ?? 0)) ?? 0) + 100
+    );
+  };
+
+  const handlePrioritySelect = async (priorityId: string | null) => {
     if (!selectedTask?.id) return;
-    updatePriority(priorityId || null);
+
     const priority = priorityId
       ? priorities?.find((p) => p.id === priorityId) || null
       : null;
-    updateTaskPriority?.(selectedTask.id, priority);
+
+    const newStatusPosition = calculateNewStatusPosition(
+      projectTasks || [],
+      priority?.order ?? null,
+      selectedTask.status_id || ''
+    );
+
+    try {
+      // Update both priority and position
+      await tasksUtils.board.updatePosition(selectedTask.id, newStatusPosition);
+      await updatePriority(priorityId || null);
+
+      // Update local state
+      updateTaskPriority?.(selectedTask.id, priority);
+    } catch (error) {
+      toast({
+        title: 'Failed to update priority',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleSizeSelect = (sizeId: string | null) => {

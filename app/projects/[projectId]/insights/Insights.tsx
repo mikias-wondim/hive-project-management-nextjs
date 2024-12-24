@@ -1,13 +1,11 @@
 'use client';
 import { Separator } from '@/components/ui/separator';
-import React, { useState } from 'react';
-// import { ChartRenderer } from './ChartRenderer';  // Comment this out temporarily
+import { useState } from 'react';
+import { InsightsContext } from '@/contexts/insightsContext';
+import { ChartRenderer } from './ChartRenderer';
+import { GroupBy } from './GroupBy';
 import { Layout } from './Layout';
 import { XAxis } from './X-axis';
-import { GroupBy } from './GroupBy';
-import { InsightsContext } from '@/contexts/insightsContext';
-import { SimpleChart } from './SimpleChart'; // Add this import
-import { ChartRenderer } from './ChartRenderer';
 
 interface Props {
   initialData: {

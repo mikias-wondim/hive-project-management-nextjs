@@ -5,6 +5,7 @@ interface TaskDetailsContextType {
   projectName: string;
   isDrawerOpen: boolean;
   openDrawer: (task: ITaskWithOptions, projectName: string) => void;
+  setSelectedTask: (task: ITaskWithOptions | null) => void;
   closeDrawer: () => void;
   updateTaskTitle?: (taskId: string, newTitle: string) => void;
   updateTaskDescription?: (taskId: string, description: string) => void;
@@ -105,6 +106,7 @@ export function TaskDetailsProvider({
         projectName,
         isDrawerOpen,
         openDrawer,
+        setSelectedTask,
         closeDrawer,
         updateTaskTitle,
         updateTaskDescription,

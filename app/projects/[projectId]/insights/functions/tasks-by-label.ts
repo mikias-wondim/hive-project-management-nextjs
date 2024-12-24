@@ -12,7 +12,7 @@ export function getTasksByLabel(
   labels.forEach((label) => labelMap.set(label.id, 0));
 
   tasks.forEach((task) => {
-    task.labels.forEach((labelId) => {
+    task.labels?.forEach((labelId) => {
       if (labelMap.has(labelId)) {
         labelMap.set(labelId, (labelMap.get(labelId) || 0) + 1);
       }

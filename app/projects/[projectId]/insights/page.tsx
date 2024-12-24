@@ -17,7 +17,10 @@ export default async function InsightsPage({ params }: Props) {
     { data: sizes },
     { data: priorities },
   ] = await Promise.all([
-    supabase.from('tasks').select('*').eq('project_id', projectId),
+    supabase
+      .from('tasks')
+      .select('*, task_labels ( labels ( id, label, color ) )')
+      .eq('project_id', projectId),
     supabase.from('statuses').select('*').eq('project_id', projectId),
     supabase.from('labels').select('*').eq('project_id', projectId),
     supabase.from('sizes').select('*').eq('project_id', projectId),
@@ -31,7 +34,11 @@ export default async function InsightsPage({ params }: Props) {
   return (
     <Insights
       initialData={{
-        tasks,
+        tasks: tasks.map((task) => ({
+          ...task,
+          labels: task.task_labels?.map((tl: any) => tl.labels.id) || [],
+          task_labels: null,
+        })),
         statuses,
         labels,
         sizes,
