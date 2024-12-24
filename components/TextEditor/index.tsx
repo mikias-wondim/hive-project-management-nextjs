@@ -19,9 +19,15 @@ interface Props {
   isEditable?: boolean;
   content: string;
   onChange: (content: string) => void;
+  resetKey?: number;
 }
 
-const TextEditor = ({ isEditable = false, content, onChange }: Props) => {
+const TextEditor = ({
+  isEditable = false,
+  content,
+  onChange,
+  resetKey = 0,
+}: Props) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -85,6 +91,12 @@ const TextEditor = ({ isEditable = false, content, onChange }: Props) => {
       onChange(editor.getHTML());
     },
   });
+
+  useEffect(() => {
+    if (editor && resetKey > 0) {
+      editor.commands.setContent('');
+    }
+  }, [editor, resetKey]);
 
   useEffect(() => {
     editor?.setEditable(true);

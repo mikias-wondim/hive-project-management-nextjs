@@ -100,6 +100,10 @@ interface IComment {
   updated_at: Date;
 }
 
+interface CommentResponse extends Omit<IComment, 'user_id'> {
+  user: Partial<IUser>;
+}
+
 type ActivityType = 'status' | 'label' | 'labels' | 'date' | 'user' | 'users';
 type ActivityPayload = 'id' | 'value' | 'ids';
 
@@ -122,12 +126,16 @@ interface IActivity {
   updated_at: Date;
 }
 
+interface ActivityResponse extends Omit<IActivity, 'user_id'> {
+  user: Partial<IUser>;
+}
+
 type TimelineType = 'activity' | 'comment';
 interface ITimeline {
   id: string;
   created_at: Date;
   type: TimelineType;
-  value: IActivity | IComment;
+  value: ActivityResponse | CommentResponse;
 }
 
 type CustomFieldDBTableName = 'statuses' | 'labels' | 'priorities' | 'sizes';

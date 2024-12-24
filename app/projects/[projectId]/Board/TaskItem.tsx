@@ -1,20 +1,13 @@
 'use client';
 import { CustomFieldTagRenderer } from '@/components/CustomFieldTagRenderer';
 import { LabelBadge } from '@/components/LabelBadge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { placeholderUserImageUrl } from '@/consts';
+import StackedAvatars from '@/components/StackedAvaters';
+import { prefetchTask } from '@/hooks/useTaskQueries';
 import { UniqueIdentifier } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useTaskDetails } from './TaskDetailsContext';
 import { useQueryClient } from '@tanstack/react-query';
-import { prefetchTask } from '@/hooks/useTaskQueries';
+import { useTaskDetails } from './TaskDetailsContext';
 
 interface Props {
   item: ITaskWithOptions;
@@ -74,24 +67,7 @@ export const TaskItem = ({ item, projectName, index }: Props) => {
           <span className="text-[11px] text-gray-400 dark:text-gray-400">
             {projectName}
           </span>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Avatar className="w-4 h-4 border">
-                  <AvatarImage
-                    src={item.creator?.avatar || placeholderUserImageUrl}
-                    alt={item.creator?.name || 'User'}
-                  />
-                  <AvatarFallback>
-                    {item.creator?.name?.charAt(0) || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{item.creator?.name || 'Unknown user'}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <StackedAvatars users={item.assignees as Partial<IUser>[]} />
         </div>
         <div
           onClick={handleClick}

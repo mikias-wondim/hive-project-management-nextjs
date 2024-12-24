@@ -1,7 +1,9 @@
-import { activities, comments } from '@/mock-data';
 import { v4 as uid } from 'uuid';
 
-export const getTimelineItems = () => {
+export const getTimelineItems = (
+  activities: ActivityResponse[],
+  comments: CommentResponse[]
+) => {
   const timelineItems: ITimeline[] = [
     ...activities.map((activity) => ({
       id: uid(),

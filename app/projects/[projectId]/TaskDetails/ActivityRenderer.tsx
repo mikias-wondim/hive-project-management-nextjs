@@ -1,50 +1,59 @@
 import { CustomFieldTagRenderer } from '@/components/CustomFieldTagRenderer';
 import { LabelBadge } from '@/components/LabelBadge';
 import { UserCard } from '@/components/UserCard';
-import { labels, statuses } from '@/mock-data';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useProjectQueries } from '@/hooks/useProjectQueries';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 
 // Helper components for each activity type
-const User = ({ id }: { id: string }) => {
-  // Replace with actual logic to fetch user details
+const User = ({ user }: { user?: Partial<IUser> }) => {
+  if (!user) {
+    return <span>Unknown User</span>;
+  }
 
   return (
     <UserCard
-      id={id}
-      name="John Doe"
-      avatarUrl=""
-      description="Software Engineer | Frontend Engineer | React | Angular | Typescript"
+      id={user.id as string}
+      name={user.name as string}
+      avatarUrl={user.avatar as string}
+      description={user.description as string}
+      links={user.links}
+      avatarStyles="w-4 h-4"
     />
   );
 };
 
-const Users = ({ ids }: { ids: string[] }) => {
-  // Replace with actual logic to fetch multiple user details
+const Users = ({ users }: { users?: Partial<IUser>[] }) => {
+  if (!users || users.length === 0) {
+    return <span>Unknown Users</span>;
+  }
 
   return (
-    <span>
-      {ids.map((id) => (
+    <div className="flex items-center flex-wrap gap-2">
+      {users?.map((user) => (
         <UserCard
-          key={id}
-          id={id}
-          name="John Doe"
-          avatarUrl=""
-          description="Software Engineer | Frontend Engineer | React | Angular | Typescript"
+          key={user.id}
+          id={user.id as string}
+          name={user.name as string}
+          avatarUrl={user.avatar as string}
+          description={user.description as string}
+          links={user.links}
+          avatarStyles="w-4 h-4"
         />
       ))}
-    </span>
+    </div>
   );
 };
 
-const StatusBadge = ({ id }: { id: string }) => {
+const StatusBadge = ({ status }: { status?: IStatus }) => {
   const params = useParams();
-  // Replace with actual logic to fetch status details
-  const status = statuses.find((status) => status.id === id);
+
   if (!status) {
-    return null;
+    return <span>Unknown Status</span>;
   }
+
   return (
     <Link
       href={`/projects/${params.projectId}/settings/statuses?option_id=${status.id}`}
@@ -54,13 +63,11 @@ const StatusBadge = ({ id }: { id: string }) => {
   );
 };
 
-const LabelRenderer = ({ id }: { id: string }) => {
+const LabelRenderer = ({ label }: { label?: ILabel }) => {
   const params = useParams();
-  // Replace with actual logic to fetch label details
-  const label = labels.find((label) => label.id === id);
 
   if (!label) {
-    return null;
+    return <span>Unknown Label</span>;
   }
 
   return (
@@ -76,13 +83,14 @@ const LabelRenderer = ({ id }: { id: string }) => {
   );
 };
 
-const LabelsRenderer = ({ ids }: { ids: string[] }) => {
+const LabelsRenderer = ({ labels }: { labels?: ILabel[] }) => {
   const params = useParams();
 
-  // Replace with actual logic to fetch multiple labels details
-  const fetchedLabels = labels.filter((label) => ids.includes(label.id));
+  if (!labels || labels.length === 0) {
+    return <span>Unknown Labels</span>;
+  }
 
-  return fetchedLabels.map((label) => (
+  return labels.map((label) => (
     <Link
       key={label.id}
       href={`/projects/${params.projectId}/settings/labels?label_id=${label.id}`}
@@ -97,18 +105,37 @@ const LabelsRenderer = ({ ids }: { ids: string[] }) => {
 };
 
 const DateRenderer = ({ value }: { value: Date | string }) => {
-  const formattedDate = new Date(value).toDateString();
+  const date = new Date(value);
+  const currentYear = new Date().getFullYear();
+  const isCurrentYear = date.getFullYear() === currentYear;
+
+  const formattedDate = isCurrentYear
+    ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    : date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+
   return <span>{formattedDate}</span>;
 };
 
 // Define the props and task activity types
 interface ActivityRendererProps {
-  activity: IActivity;
+  activity: ActivityResponse;
+  allMembers: Partial<IUser>[];
+  statuses: IStatus[];
+  labels: ILabel[];
 }
 
-const ActivityRenderer: FC<ActivityRendererProps> = ({ activity }) => {
+const ActivityRenderer: FC<ActivityRendererProps> = ({
+  activity,
+  allMembers,
+  statuses,
+  labels,
+}) => {
   return (
-    <div className="flex items-center flex-wrap text-xs gap-1 ml-3">
+    <div className="flex items-center flex-wrap text-xs gap-1 ml-3 my-3">
       {activity.content.map((item, index) => {
         if (typeof item === 'string') {
           return (
@@ -120,17 +147,48 @@ const ActivityRenderer: FC<ActivityRendererProps> = ({ activity }) => {
 
         switch (item.type) {
           case 'user':
-            return <User key={index} id={item.id} />;
+            return (
+              <User
+                key={index}
+                user={allMembers?.find((member) => member.id === item.id)}
+              />
+            );
           case 'status':
-            return <StatusBadge key={index} id={item.id} />;
+            return (
+              <StatusBadge
+                key={index}
+                status={statuses?.find(
+                  (status: IStatus) => status.id === item.id
+                )}
+              />
+            );
           case 'label':
-            return <LabelRenderer key={index} id={item.id} />;
+            return (
+              <LabelRenderer
+                key={index}
+                label={labels?.find((label: ILabel) => label.id === item.id)}
+              />
+            );
           case 'labels':
-            return <LabelsRenderer key={index} ids={item.ids} />;
+            return (
+              <LabelsRenderer
+                key={index}
+                labels={item.ids
+                  .map((id) => labels?.find((label: ILabel) => label.id === id))
+                  ?.filter((label): label is ILabel => label !== undefined)}
+              />
+            );
           case 'date':
             return <DateRenderer key={index} value={item.value} />;
           case 'users':
-            return <Users key={index} ids={item.ids} />;
+            return (
+              <Users
+                key={index}
+                users={item.ids
+                  .map((id) => allMembers?.find((member) => member.id === id))
+                  .filter((member): member is IUser => member !== undefined)}
+              />
+            );
           default:
             return null;
         }

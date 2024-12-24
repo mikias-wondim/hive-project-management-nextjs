@@ -18,12 +18,16 @@ import { useEffect, useState, useMemo } from 'react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useParams } from 'next/navigation';
 import { UserCard } from '@/components/UserCard';
+import { useActivityQueries } from '@/hooks/useActivityQueries';
 
 export const Assignees = () => {
   const params = useParams();
   const { selectedTask } = useTaskDetails();
-  const { members } = useProjectQueries(params.projectId as string);
+  const { members, reloadProjectTasks } = useProjectQueries(
+    params.projectId as string
+  );
   const { task, updateAssignees } = useTaskQueries(selectedTask?.id || '');
+  const { createActivities } = useActivityQueries(selectedTask?.id || '');
   const { user } = useCurrentUser();
 
   const [filter, setFilter] = useState('');
@@ -53,21 +57,131 @@ export const Assignees = () => {
     });
   };
 
-  const handlePopoverOpenChange = (open: boolean) => {
+  const handlePopoverOpenChange = async (open: boolean) => {
     if (
       !open &&
       JSON.stringify(selectedAssignees.sort()) !==
         JSON.stringify(task?.assignees?.map((a) => a.id).sort())
     ) {
-      updateAssignees(selectedAssignees);
+      const currentAssignees = task?.assignees?.map((a) => a.id) || [];
+      const newAssignees = selectedAssignees;
+
+      // Find added and removed assignees
+      const addedAssignees = newAssignees.filter(
+        (id) => !currentAssignees.includes(id)
+      );
+      const removedAssignees = currentAssignees.filter(
+        (id) => !newAssignees.includes(id)
+      );
+
+      // Update the assignees first
+      await updateAssignees(selectedAssignees);
+      await reloadProjectTasks();
+
+      // Create activities for both additions and removals
+      const activities: {
+        task_id: string;
+        user_id: string;
+        content: TaskActivity;
+      }[] = [];
+
+      // Handle added assignees
+      if (addedAssignees.length > 0) {
+        // Check if it's a self-assignment
+        if (addedAssignees.length === 1 && addedAssignees[0] === user?.id) {
+          activities.push({
+            task_id: selectedTask?.id as string,
+            user_id: user?.id as string,
+            content: [
+              {
+                type: 'user',
+                id: user?.id as string,
+              },
+              'self-assigned this on',
+              { type: 'date', value: new Date().toISOString() },
+            ],
+          });
+        } else {
+          activities.push({
+            task_id: selectedTask?.id as string,
+            user_id: user?.id as string,
+            content: [
+              {
+                type: 'user',
+                id: user?.id as string,
+              },
+              'assigned',
+              { type: 'users', ids: addedAssignees },
+              'to this on',
+              { type: 'date', value: new Date().toISOString() },
+            ],
+          });
+        }
+      }
+
+      // Handle removed assignees
+      if (removedAssignees.length > 0) {
+        // Check if it's a self-unassignment
+        if (removedAssignees.length === 1 && removedAssignees[0] === user?.id) {
+          activities.push({
+            task_id: selectedTask?.id as string,
+            user_id: user?.id as string,
+            content: [
+              {
+                type: 'user',
+                id: user?.id as string,
+              },
+              'removed themselves from this task on',
+              { type: 'date', value: new Date().toISOString() },
+            ],
+          });
+        } else {
+          activities.push({
+            task_id: selectedTask?.id as string,
+            user_id: user?.id as string,
+            content: [
+              {
+                type: 'user',
+                id: user?.id as string,
+              },
+              'unassigned',
+              { type: 'users', ids: removedAssignees },
+              'from this task on',
+              { type: 'date', value: new Date().toISOString() },
+            ],
+          });
+        }
+      }
+
+      if (activities.length > 0) {
+        await createActivities(activities);
+      }
     }
     setIsOpen(open);
   };
 
-  const handleAssignSelf = () => {
+  const handleAssignSelf = async () => {
     if (user?.id) {
+      await updateAssignees([user.id]);
+      await reloadProjectTasks();
+
+      // Create self-assignment activity
+      await createActivities([
+        {
+          task_id: selectedTask?.id as string,
+          user_id: user.id,
+          content: [
+            {
+              type: 'user',
+              id: user.id,
+            },
+            'self-assigned this on',
+            { type: 'date', value: new Date().toISOString() },
+          ],
+        },
+      ]);
+
       setSelectedAssignees([user.id]);
-      updateAssignees([user.id]);
     }
   };
 
@@ -118,7 +232,7 @@ export const Assignees = () => {
       </div>
       <div className="text-xs pt-2 pb-4">
         {task?.assignees && task.assignees.length > 0 ? (
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             {task.assignees.map((assignee) => (
               <UserCard
                 key={assignee.id}

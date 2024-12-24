@@ -1,4 +1,6 @@
 import { toast } from '@/components/ui/use-toast';
+import { useActivityQueries } from '@/hooks/useActivityQueries';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { canMoveTask, moveTaskDown, moveTaskUp } from '@/utils/move-task';
 import { tasks as tasksUtils } from '@/utils/tasks';
 import {
@@ -31,8 +33,11 @@ interface DragTaskContext {
 
 export const useBoardDragAndDrop = () => {
   const [overColumnId, setOverColumnId] = useState<string | null>(null);
+  const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
   const [activeTask, setActiveTask] = useState<ITaskWithOptions | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const { user } = useCurrentUser();
+  const { createActivity } = useActivityQueries(activeTask?.id as string);
 
   const pointerSensor = useSensor(PointerSensor, {
     activationConstraint: {
@@ -131,6 +136,23 @@ export const useBoardDragAndDrop = () => {
     }
     // ---------------------------
   };
+
+  const getStatusMoveActivity = (
+    userId: string,
+    fromStatusId: string,
+    toStatusId: string
+  ): TaskActivity => {
+    return [
+      { type: 'user', id: userId },
+      'moved this from',
+      { type: 'status', id: fromStatusId },
+      'to',
+      { type: 'status', id: toStatusId },
+      'on',
+      { type: 'date', value: new Date().toISOString() },
+    ];
+  };
+
   // Handle task movement within the same column
   const handleSameColumnDrag = async (context: DragTaskContext) => {
     const {
@@ -175,6 +197,16 @@ export const useBoardDragAndDrop = () => {
         activeId as string,
         newStatusPosition as number
       );
+      // create activity
+      await createActivity({
+        task_id: activeId as string,
+        user_id: user?.id as string,
+        content: getStatusMoveActivity(
+          user?.id as string,
+          activeColumnId as string,
+          overColumnId as string
+        ),
+      });
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -235,6 +267,17 @@ export const useBoardDragAndDrop = () => {
         overColumnId as string,
         newStatusPosition as number
       );
+
+      // create activity
+      await createActivity({
+        task_id: activeId as string,
+        user_id: user?.id as string,
+        content: getStatusMoveActivity(
+          user?.id as string,
+          activeColumnId as string,
+          overColumnId as string
+        ),
+      });
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -246,7 +289,7 @@ export const useBoardDragAndDrop = () => {
 
   // Handle task movement to an empty column
   const handleEmptyColumnDrag = async (context: DragTaskContext) => {
-    const { tasks, setTasks, activeId, overId, overColumnId } = context;
+    const { tasks, setTasks, active, activeId, overId, overColumnId } = context;
 
     const activeIndex = tasks.findIndex((item) => item.id === activeId);
     tasks[activeIndex].statusPosition = 10000;
@@ -260,6 +303,16 @@ export const useBoardDragAndDrop = () => {
         overColumnId ?? '',
         10000
       );
+      // create activity
+      await createActivity({
+        task_id: activeId as string,
+        user_id: user?.id as string,
+        content: getStatusMoveActivity(
+          user?.id as string,
+          activeColumnId as string,
+          overColumnId as string
+        ),
+      });
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -334,7 +387,7 @@ export const useBoardDragAndDrop = () => {
   };
 
   const handleNonPriorityColumnDrag = async (context: DragTaskContext) => {
-    const { tasks, setTasks, activeId, overColumnId } = context;
+    const { tasks, setTasks, active, activeId, overColumnId } = context;
     const columnTasks = tasks.filter((task) => task.status_id === overColumnId);
 
     const lastTaskIndex = columnTasks.length - 1;
@@ -358,6 +411,17 @@ export const useBoardDragAndDrop = () => {
         overColumnId as string,
         newStatusPosition ?? 0
       );
+
+      // create activity
+      await createActivity({
+        task_id: activeId as string,
+        user_id: user?.id as string,
+        content: getStatusMoveActivity(
+          user?.id as string,
+          activeColumnId as string,
+          overColumnId as string
+        ),
+      });
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -387,6 +451,17 @@ export const useBoardDragAndDrop = () => {
         overColumnId as string,
         newStatusPosition ?? 0
       );
+
+      // create activity
+      await createActivity({
+        task_id: activeId as string,
+        user_id: user?.id as string,
+        content: getStatusMoveActivity(
+          user?.id as string,
+          activeColumnId as string,
+          overColumnId as string
+        ),
+      });
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -469,8 +544,10 @@ export const useBoardDragAndDrop = () => {
           ? active.data.current?.task.status_id
           : over.data.current?.task.status_id
       );
+      setActiveColumnId(active.data.current?.task.status_id as string);
     } else if (isOverEmptyColumnArea) {
       setOverColumnId(over.id as string);
+      setActiveColumnId(active.data.current?.task.status_id as string);
     }
   };
 

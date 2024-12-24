@@ -90,6 +90,12 @@ export const defaultPriorities: ICustomFieldData[] = [
 export const defaultLabels: ICustomFieldData[] = [
   {
     id: uid(),
+    label: 'enhancement',
+    description: 'New feature or request',
+    color: '#728dec',
+  },
+  {
+    id: uid(),
     label: 'bug',
     description: "Something isn't working.",
     color: '#dc3a48',
@@ -100,16 +106,41 @@ export const defaultLabels: ICustomFieldData[] = [
     description: 'Improvements or additions to documentation',
     color: '#007ad4',
   },
-  {
-    id: uid(),
-    label: 'enhancement',
-    description: 'New feature or request',
-    color: '#728dec',
-  },
+
   {
     id: uid(),
     label: 'duplicate',
     description: 'This feature already exists',
+    color: '#4c4c63',
+  },
+  {
+    id: uid(),
+    label: 'good first issue',
+    description: 'Good for beginners',
+    color: '#7158fe',
+  },
+  {
+    id: uid(),
+    label: 'help wanted',
+    description: 'Extra attention is needed',
+    color: '#008975',
+  },
+  {
+    id: uid(),
+    label: 'invalid',
+    description: "This doesn't seem right",
+    color: '#e6e367',
+  },
+  {
+    id: uid(),
+    label: 'question',
+    description: 'Further information is requested',
+    color: '#d07adc',
+  },
+  {
+    id: uid(),
+    label: 'wontfix',
+    description: 'This will not be worked on',
     color: '#4c4c63',
   },
 ];

@@ -17,7 +17,8 @@ import { CustomFieldTagRenderer } from '@/components/CustomFieldTagRenderer';
 
 export const Project = () => {
   const params = useParams();
-  const { selectedTask, updateTaskSize, updateTaskPriority } = useTaskDetails();
+  const { selectedTask, projectName, updateTaskSize, updateTaskPriority } =
+    useTaskDetails();
   const { statuses, priorities, sizes } = useProjectQueries(
     params.projectId as string
   );
@@ -70,8 +71,9 @@ export const Project = () => {
 
   return (
     <>
-      <div className="text-gray-500 py-4">
-        <span className="text-xs">Project</span>
+      <div className="py-4">
+        <span className="text-gray-500 text-xs">Project</span>
+        <p className="text-xs py-1">{projectName}</p>
       </div>
 
       <div className="flex gap-8 items-center text-gray-500">

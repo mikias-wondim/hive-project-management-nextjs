@@ -20,6 +20,9 @@ export const tasks = {
           priority ( id, label, color, order ),
           task_labels (
             labels ( id, label, color )
+          ),
+          task_assignees (
+            users ( id, name, avatar, description, links )
           )
         `
         )
@@ -30,7 +33,9 @@ export const tasks = {
       return data.map((task) => ({
         ...task,
         labels: task.task_labels?.map((tl) => tl.labels) || [],
+        assignees: task.task_assignees?.map((a) => a.users) || [],
         task_labels: null,
+        task_assignees: null,
       })) as any[];
     },
 

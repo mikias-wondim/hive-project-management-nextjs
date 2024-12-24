@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, memo } from 'react';
 import {
   HoverCard,
   HoverCardContent,
@@ -8,6 +8,7 @@ import { UserAvatar } from './Avatar';
 import Link from 'next/link';
 import { Separator } from './ui/separator';
 import { Link as LinkIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Props {
   id: string;
@@ -16,65 +17,92 @@ interface Props {
   description?: string;
   links?: IUserLink[];
   showPreviewName?: boolean;
+  avatarStyles?: string;
 }
 
-export const UserCard: FC<Props> = ({
-  id,
-  name,
-  avatarUrl,
-  description,
-  links,
-  showPreviewName = true,
-}) => {
-  return (
-    <HoverCard>
-      <Link href={`/profile/${id}`}>
-        <HoverCardTrigger asChild>
-          <div className="flex items-center gap-2 cursor-pointer">
-            <UserAvatar
-              src={avatarUrl}
-              fallback={name.charAt(0)}
-              className="w-6 h-6"
-            />
-            {showPreviewName && <span className="text-bold">{name}</span>}
+// Memoized link component to prevent re-renders
+const UserLink = memo(({ link }: { link: IUserLink }) => (
+  <div className="flex items-center">
+    <LinkIcon className="w-3 h-3 mr-1" />
+    <Link
+      href={link.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-xs text-muted-foreground hover:text-sky-500"
+    >
+      {link.label}
+    </Link>
+    <span className="text-xs text-muted-foreground px-3">|</span>
+  </div>
+));
+
+UserLink.displayName = 'UserLink';
+
+// Memoized card content to prevent re-renders
+const UserCardContent = memo(
+  ({ name, avatarUrl, description, links, id }: Props) => (
+    <div>
+      <div className="flex items-center gap-2">
+        <Link href={`/profile/${id}`}>
+          <UserAvatar src={avatarUrl} fallback={name.charAt(0)} />
+        </Link>
+        <p className="text-bold py-2 text-lg">{name}</p>
+      </div>
+
+      {description && (
+        <p className="text-sm text-muted-foreground py-3">{description}</p>
+      )}
+
+      {links && links.length > 0 && (
+        <>
+          <Separator className="my-2" />
+          <div className="flex items-center">
+            {links?.map((link) => <UserLink key={link.id} link={link} />)}
           </div>
-        </HoverCardTrigger>
-      </Link>
-      <HoverCardContent side="top" className="w-80">
-        <div className="flex items-center gap-2">
-          <Link href={`/profile/${id}`}>
-            <UserAvatar src={avatarUrl} fallback={name.charAt(0)} />
-          </Link>
-          <p className="text-bold py-2 text-lg">{name}</p>
-        </div>
+        </>
+      )}
+    </div>
+  )
+);
 
-        {description && (
-          <p className="text-sm text-muted-foreground py-3">{description}</p>
-        )}
+UserCardContent.displayName = 'UserCardContent';
 
-        {links && links.length > 0 && (
-          <>
-            <Separator className="my-2" />
-
-            <div className="flex items-center">
-              {links?.map((link) => (
-                <div key={link.id} className="flex items-center">
-                  <LinkIcon className="w-3 h-3 mr-1" />
-                  <Link
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-muted-foreground hover:text-sky-500"
-                  >
-                    {link.label}
-                  </Link>
-                  <span className="text-xs text-muted-foreground px-3">|</span>
-                </div>
-              ))}
+export const UserCard: FC<Props> = memo(
+  ({
+    id,
+    name,
+    avatarUrl,
+    description,
+    links,
+    showPreviewName = true,
+    avatarStyles,
+  }) => {
+    return (
+      <HoverCard>
+        <Link href={`/profile/${id}`}>
+          <HoverCardTrigger asChild>
+            <div className="flex items-center gap-2 cursor-pointer">
+              <UserAvatar
+                src={avatarUrl}
+                fallback={name.charAt(0)}
+                className={cn('w-6 h-6', avatarStyles)}
+              />
+              {showPreviewName && <span className="text-bold">{name}</span>}
             </div>
-          </>
-        )}
-      </HoverCardContent>
-    </HoverCard>
-  );
-};
+          </HoverCardTrigger>
+        </Link>
+        <HoverCardContent side="top" className="w-80">
+          <UserCardContent
+            id={id}
+            name={name}
+            avatarUrl={avatarUrl}
+            description={description}
+            links={links}
+          />
+        </HoverCardContent>
+      </HoverCard>
+    );
+  }
+);
+
+UserCard.displayName = 'UserCard';
