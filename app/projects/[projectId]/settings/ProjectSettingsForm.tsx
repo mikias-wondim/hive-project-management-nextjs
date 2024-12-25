@@ -137,10 +137,10 @@ export function ProjectSettingsForm({ project }: ProjectSettingsFormProps) {
         </Button>
       </div>
 
-      {role === 'owner' && (
-        <div className="my-20">
-          <h1 className="text-xl my-3">Danger zone</h1>
-          <div className="border border-red-500 rounded-md">
+      <div className="my-20">
+        <h1 className="text-xl my-3">Danger zone</h1>
+        <div className="border border-red-500 rounded-md">
+          {can(ProjectAction.CLOSE_PROJECT) && (
             <div className="flex justify-between items-center px-4 py-3">
               <div>
                 <p className="text-sm font-medium">Close Project</p>
@@ -159,28 +159,33 @@ export function ProjectSettingsForm({ project }: ProjectSettingsFormProps) {
                 Close this project
               </Button>
             </div>
-            <Separator className="my-2" />
-            <div className="flex justify-between items-center px-4 py-3">
-              <div>
-                <p className="text-sm font-medium">Delete Project</p>
-                <p className="text-sm text-gray-800 dark:text-gray-400">
-                  Once you delete a project, there is no going back. Please be
-                  certain.
-                </p>
+          )}
+
+          {can(ProjectAction.DELETE_PROJECT) && (
+            <>
+              <Separator className="my-2" />
+              <div className="flex justify-between items-center px-4 py-3">
+                <div>
+                  <p className="text-sm font-medium">Delete Project</p>
+                  <p className="text-sm text-gray-800 dark:text-gray-400">
+                    Once you delete a project, there is no going back. Please be
+                    certain.
+                  </p>
+                </div>
+                <Button
+                  className={cn(
+                    secondaryBtnStyles,
+                    'text-red-500 dark:text-red-400'
+                  )}
+                  onClick={() => setShowDeleteDialog(true)}
+                >
+                  Delete this project
+                </Button>
               </div>
-              <Button
-                className={cn(
-                  secondaryBtnStyles,
-                  'text-red-500 dark:text-red-400'
-                )}
-                onClick={() => setShowDeleteDialog(true)}
-              >
-                Delete this project
-              </Button>
-            </div>
-          </div>
+            </>
+          )}
         </div>
-      )}
+      </div>
 
       <CloseProjectDialog
         open={showCloseDialog}
