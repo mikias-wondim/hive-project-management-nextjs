@@ -191,7 +191,8 @@ export const ColumnContainer = ({
         <div
           className={cn(
             'flex-1 overflow-y-auto space-y-2 p-2',
-            isOver && 'bg-green-200 dark:bg-green-950'
+            isOver &&
+              'bg-gray-200 dark:bg-gray-900 border border-dashed border-gray-400 dark:border-gray-600'
           )}
         >
           {columnTasks.map((item, index) => (

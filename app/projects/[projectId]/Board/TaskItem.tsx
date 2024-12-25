@@ -49,7 +49,7 @@ export const TaskItem = ({ item, projectName, index }: Props) => {
       <div
         ref={setNodeRef}
         style={style}
-        className="w-[95%] min-h-[80px] bg-gray-200 dark:bg-gray-800 rounded-md border border-dashed border-gray-400 mx-2 dark:border-gray-600"
+        className="w-[95%] min-h-[80px] bg-gray-200 dark:bg-gray-800 rounded-md border border-dashed border-gray-400 dark:border-gray-600"
       />
     );
   }
