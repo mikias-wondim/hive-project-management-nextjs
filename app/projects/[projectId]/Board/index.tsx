@@ -31,7 +31,7 @@ export const Board: React.FC<Props> = ({
   const { can } = useProjectAccess({ projectId });
   const [columns, setColumns] = useState(statuses);
   const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { projectTasks, reloadProjectTasks } = useProjectQueries(projectId);
   const [tasks, setTasks] = useState<ITaskWithOptions[]>(projectTasks || []);
 
