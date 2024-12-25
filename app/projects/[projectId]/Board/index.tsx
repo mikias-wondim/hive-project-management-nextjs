@@ -193,7 +193,6 @@ export const Board: React.FC<Props> = ({
 
           <CreateCustomFieldOptionModal
             title="New Column"
-            can={can}
             handleSubmit={handleCreateColumn}
             triggerBtn={
               <Button

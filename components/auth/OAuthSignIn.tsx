@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { Icons } from '@/components/Icons';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/utils/auth';
@@ -11,14 +11,11 @@ import { useSearchParams } from 'next/navigation';
 interface Props {
   isLoading?: boolean;
   onLoadingChange?: (loading: boolean) => void;
-  redirectUrl?: string; // Optional prop to override the next URL from search params
+  redirectUrl?: string;
 }
 
-export function OAuthSignIn({
-  isLoading,
-  onLoadingChange,
-  redirectUrl,
-}: Props) {
+// Separate component to handle search params
+function OAuthButtons({ isLoading, onLoadingChange, redirectUrl }: Props) {
   const [internalLoading, setInternalLoading] = useState(false);
   const { toast } = useToast();
   const searchParams = useSearchParams();
@@ -47,6 +44,31 @@ export function OAuthSignIn({
   };
 
   return (
+    <div className="grid grid-cols-2 gap-4">
+      <Button
+        variant="outline"
+        type="button"
+        disabled={loading}
+        onClick={() => handleOAuthSignIn('github')}
+      >
+        <Icons.gitHub className="mr-2 h-4 w-4" />
+        Github
+      </Button>
+      <Button
+        variant="outline"
+        type="button"
+        disabled={loading}
+        onClick={() => handleOAuthSignIn('google')}
+      >
+        <Icons.google className="mr-2 h-4 w-4" />
+        Google
+      </Button>
+    </div>
+  );
+}
+
+export function OAuthSignIn(props: Props) {
+  return (
     <div className="w-full">
       <div className="relative mb-4">
         <div className="absolute inset-0 flex items-center">
@@ -59,26 +81,22 @@ export function OAuthSignIn({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Button
-          variant="outline"
-          type="button"
-          disabled={loading}
-          onClick={() => handleOAuthSignIn('github')}
-        >
-          <Icons.gitHub className="mr-2 h-4 w-4" />
-          Github
-        </Button>
-        <Button
-          variant="outline"
-          type="button"
-          disabled={loading}
-          onClick={() => handleOAuthSignIn('google')}
-        >
-          <Icons.google className="mr-2 h-4 w-4" />
-          Google
-        </Button>
-      </div>
+      <Suspense
+        fallback={
+          <div className="grid grid-cols-2 gap-4">
+            <Button variant="outline" disabled>
+              <Icons.gitHub className="mr-2 h-4 w-4" />
+              Github
+            </Button>
+            <Button variant="outline" disabled>
+              <Icons.google className="mr-2 h-4 w-4" />
+              Google
+            </Button>
+          </div>
+        }
+      >
+        <OAuthButtons {...props} />
+      </Suspense>
     </div>
   );
 }
