@@ -6,7 +6,7 @@ interface SuggestionProps {
   editor: any;
   query: string;
   range: any;
-  items: any[];
+  items: Partial<IUser>[];
   clientRect?: () => DOMRect;
 }
 
@@ -14,36 +14,12 @@ interface OnKeyDownProps {
   event: KeyboardEvent;
 }
 
-const suggestion = {
+const getSuggestion = (users: Partial<IUser>[]) => ({
   items: ({ query }: { query: string }) => {
-    return [
-      'Lea Thompson',
-      'Cyndi Lauper',
-      'Tom Cruise',
-      'Madonna',
-      'Jerry Hall',
-      'Joan Collins',
-      'Winona Ryder',
-      'Christina Applegate',
-      'Alyssa Milano',
-      'Molly Ringwald',
-      'Ally Sheedy',
-      'Debbie Harry',
-      'Olivia Newton-John',
-      'Elton John',
-      'Michael J. Fox',
-      'Axl Rose',
-      'Emilio Estevez',
-      'Ralph Macchio',
-      'Rob Lowe',
-      'Jennifer Grey',
-      'Mickey Rourke',
-      'John Cusack',
-      'Matthew Broderick',
-      'Justine Bateman',
-      'Lisa Bonet',
-    ]
-      .filter((item) => item.toLowerCase().startsWith(query.toLowerCase()))
+    return users
+      .filter((item) =>
+        item.name?.toLowerCase().startsWith(query.toLowerCase())
+      )
       .slice(0, 5);
   },
 
@@ -107,6 +83,6 @@ const suggestion = {
       },
     };
   },
-};
+});
 
-export default suggestion as any;
+export default getSuggestion as any;

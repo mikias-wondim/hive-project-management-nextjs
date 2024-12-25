@@ -1,3 +1,4 @@
+import { UserAvatar } from '@/components/Avatar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import React, {
@@ -8,8 +9,8 @@ import React, {
 } from 'react';
 
 interface MentionListProps {
-  items: string[];
-  command: (item: { id: string }) => void;
+  items: Partial<IUser>[];
+  command: (item: { label: string; id: string }) => void;
 }
 
 export interface MentionListRef {
@@ -22,10 +23,9 @@ const MentionList = forwardRef<MentionListRef, MentionListProps>(
 
     const selectItem = (index: number) => {
       const item = props.items[index];
-      console.log('selected item', item);
 
       if (item) {
-        props.command({ id: item });
+        props.command({ label: item.name || '', id: item.id || '' });
       }
     };
 
@@ -69,7 +69,7 @@ const MentionList = forwardRef<MentionListRef, MentionListProps>(
     return (
       <div className="bg-gray-200 dark:bg-gray-900 border p-2 rounded-sm mention-dropdown-menu">
         {props.items.length ? (
-          props.items.map((item, index) => (
+          props.items.map((user, index) => (
             <Button
               variant="ghost"
               className={cn(
@@ -84,8 +84,12 @@ const MentionList = forwardRef<MentionListRef, MentionListProps>(
                 selectItem(index);
               }}
             >
-              <span className="w-4 h-4 mr-2 rounded-full bg-gray-600"></span>
-              {item}
+              <UserAvatar
+                src={user.avatar}
+                fallback={user.name}
+                className="w-4 h-4 mr-2"
+              />
+              {user.name}
             </Button>
           ))
         ) : (

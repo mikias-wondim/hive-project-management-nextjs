@@ -12,7 +12,7 @@ import Underline from '@tiptap/extension-underline';
 import { EditorContent, mergeAttributes, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useEffect } from 'react';
-import suggestion from './Toolbar/Mention/suggestion';
+import getSuggestion from './Toolbar/Mention/suggestion';
 import { ToolBar } from './Toolbar/ToolBar';
 
 interface Props {
@@ -20,6 +20,7 @@ interface Props {
   content: string;
   onChange: (content: string) => void;
   resetKey?: number;
+  users?: Partial<IUser>[];
 }
 
 const TextEditor = ({
@@ -27,6 +28,7 @@ const TextEditor = ({
   content,
   onChange,
   resetKey = 0,
+  users = [],
 }: Props) => {
   const editor = useEditor({
     extensions: [
@@ -62,6 +64,7 @@ const TextEditor = ({
             'bg-gray-100 dark:bg-gray-900 rounded-sm p-4 border border-gray-200 dark:border-gray-800 my-2',
         },
       }),
+
       Mention.configure({
         HTMLAttributes: {
           class: 'text-sky-700 dark:text-sky-500',
@@ -69,11 +72,14 @@ const TextEditor = ({
         renderHTML({ options, node }) {
           return [
             'a',
-            mergeAttributes({ href: '/profile/1' }, options.HTMLAttributes),
+            mergeAttributes(
+              { href: `/profile/${node.attrs.id}` },
+              options.HTMLAttributes
+            ),
             `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}`,
           ];
         },
-        suggestion,
+        suggestion: getSuggestion(users),
       }),
     ],
     editable: isEditable,

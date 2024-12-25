@@ -67,7 +67,7 @@ export const TaskItem = ({ item, projectName, index }: Props) => {
           <span className="text-[11px] text-gray-400 dark:text-gray-400">
             {projectName}
           </span>
-          <StackedAvatars users={item.assignees as Partial<IUser>[]} />
+          <StackedAvatars users={(item.assignees as Partial<IUser>[]) || []} />
         </div>
         <div
           onClick={handleClick}

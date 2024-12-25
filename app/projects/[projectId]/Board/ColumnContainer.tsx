@@ -101,7 +101,7 @@ export const ColumnContainer = ({
         description: 'Task created successfully',
       });
 
-      onTaskCreated?.(task);
+      onTaskCreated?.({ ...task, assignees: [] });
       setInputValue('');
       setShowInput(false);
     } catch (error) {

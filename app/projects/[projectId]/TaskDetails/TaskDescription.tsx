@@ -1,26 +1,22 @@
 'use client';
 import { secondaryBtnStyles, successBtnStyles } from '@/app/commonStyles';
-import { UserAvatar } from '@/components/Avatar';
 import TextEditor from '@/components/TextEditor';
 import { Button } from '@/components/ui/button';
+import { UserCard } from '@/components/UserCard';
+import { useTaskQueries } from '@/hooks/useTaskQueries';
 import { cn } from '@/lib/utils';
+import { formatRelativeTime } from '@/utils/date';
 import { Pen } from 'lucide-react';
 import { useState } from 'react';
 import { useTaskDetails } from '../Board/TaskDetailsContext';
-import { formatRelativeTime } from '@/utils/date';
-import { useTaskQueries } from '@/hooks/useTaskQueries';
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/hover-card';
-import Link from 'next/link';
-import { Separator } from '@/components/ui/separator';
-import { UserCard } from '@/components/UserCard';
+import { useProjectQueries } from '@/hooks/useProjectQueries';
+import { useParams } from 'next/navigation';
 
 export const TaskDescription = () => {
+  const params = useParams();
   const { selectedTask } = useTaskDetails();
   const { task, updateDescription } = useTaskQueries(selectedTask?.id || '');
+  const { members } = useProjectQueries(params.projectId as string);
   const [description, setDescription] = useState(task?.description || '');
   const [editable, setEditable] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -76,6 +72,7 @@ export const TaskDescription = () => {
                 content={description}
                 onChange={setDescription}
                 isEditable={editable}
+                users={members || []}
               />
             </div>
             <div className="flex items-center justify-end space-x-3 pt-2">
