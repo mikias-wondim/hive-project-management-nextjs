@@ -19,6 +19,7 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useParams } from 'next/navigation';
 import { UserCard } from '@/components/UserCard';
 import { useActivityQueries } from '@/hooks/useActivityQueries';
+import { useProjectOwner } from '@/hooks/useProjectOwner';
 
 export const Assignees = () => {
   const params = useParams();
@@ -29,6 +30,7 @@ export const Assignees = () => {
   const { task, updateAssignees } = useTaskQueries(selectedTask?.id || '');
   const { createActivities } = useActivityQueries(selectedTask?.id || '');
   const { user } = useCurrentUser();
+  const { owner } = useProjectOwner(params.projectId as string);
 
   const [filter, setFilter] = useState('');
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
@@ -41,12 +43,24 @@ export const Assignees = () => {
     }
   }, [task?.assignees]);
 
-  // Combine project members with current user if not already included
+  // Combine project members with owner if not already included
   const allMembers = useMemo(() => {
-    if (!members || !user) return members;
-    const isCurrentUserMember = members.some((m) => m.id === user.id);
-    return isCurrentUserMember ? members : [...members, user];
-  }, [members, user]);
+    if (!members || !owner) return members ?? [];
+    const isOwnerInMembers = members.some((m) => m.id === owner.id);
+    if (isOwnerInMembers) return members;
+
+    return [
+      {
+        id: owner.id,
+        name: owner.name,
+        email: owner.email,
+        avatar: owner.avatar,
+        description: owner.description,
+        links: owner.links,
+      },
+      ...members,
+    ];
+  }, [members, owner]);
 
   const handleAssigneeToggle = (userId: string) => {
     setSelectedAssignees((prev) => {

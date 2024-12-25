@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/Avatar';
 import { useToast } from '@/components/ui/use-toast';
 import { createClient } from '@/utils/supabase/client';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { RoleSelect } from './RoleSelect';
 import { useProjectAccess } from '@/hooks/useProjectAccess';
 import { useAccessStore } from '@/stores/useAccessStore';
 import { ProjectAction } from '@/consts';
+import { useProjectOwner } from '@/hooks/useProjectOwner';
+import { Badge } from '@/components/ui/badge';
 
 interface MemberWithUser extends IProjectMember {
   user: Pick<IUser, 'id' | 'name' | 'email' | 'avatar'>;
@@ -39,15 +41,45 @@ export const ManageAccess = ({
   const [isUpdatingMembers, setIsUpdatingMembers] = useState(false);
   const { toast } = useToast();
   const supabase = createClient();
-  const { can, isLoading } = useProjectAccess({
-    projectId,
-  });
+  const { can, isLoading } = useProjectAccess({ projectId });
+  const { owner, isLoading: isLoadingOwner } = useProjectOwner(projectId);
 
-  if (isLoading) return <div>Loading...</div>;
+  // Combine project members with owner if not already included
+  const allMembers = useMemo(() => {
+    if (!members || !owner) return members ?? [];
+    const isOwnerInMembers = members.some((m) => m.user_id === owner.id);
+    if (isOwnerInMembers) return members;
 
-  const filteredMembers = members.filter((member) =>
-    member.user.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    // Add owner as a member
+    return [
+      {
+        id: `owner-${owner.id}`,
+        user_id: owner.id,
+        project_id: projectId,
+        role: 'owner' as Role,
+        invitationStatus: 'accepted',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        user: {
+          id: owner.id,
+          name: owner.name,
+          email: owner.email,
+          avatar: owner.avatar,
+        },
+      },
+      ...members,
+    ];
+  }, [members, owner, projectId]);
+
+  const filteredMembers = useMemo(() => {
+    return allMembers.filter((member) =>
+      member.user.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [allMembers, searchTerm]);
+
+  if (isLoading || isLoadingOwner) return <div>Loading...</div>;
+
+  const totalMemberCount = allMembers.length;
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -188,7 +220,7 @@ export const ManageAccess = ({
                 onCheckedChange={handleSelectAll}
               />
               <span className="text-xs">
-                {selectedIds.size} of {members.length} members
+                {selectedIds.size} of {totalMemberCount} members
               </span>
             </div>
           )}
@@ -222,14 +254,16 @@ export const ManageAccess = ({
               className="p-4 flex items-center justify-between hover:bg-muted/50"
             >
               <div className="flex items-center gap-3">
-                {canRemoveMembers && currentUserId !== member.user_id && (
-                  <Checkbox
-                    checked={selectedIds.has(member.id)}
-                    onCheckedChange={(checked: boolean) =>
-                      handleSelectMember(member.id, checked)
-                    }
-                  />
-                )}
+                {canRemoveMembers &&
+                  currentUserId !== member.user_id &&
+                  member.user_id !== owner?.id && (
+                    <Checkbox
+                      checked={selectedIds.has(member.id)}
+                      onCheckedChange={(checked: boolean) =>
+                        handleSelectMember(member.id, checked)
+                      }
+                    />
+                  )}
                 <div className="flex items-center gap-2">
                   <UserAvatar
                     src={member.user.avatar}
@@ -237,7 +271,15 @@ export const ManageAccess = ({
                     className="h-6 w-6"
                   />
                   <div>
-                    <p className="text-sm font-medium">{member.user.name}</p>
+                    <p className="text-sm font-medium">
+                      {member.user.name}
+                      {member.user_id === currentUserId && (
+                        <span className="text-xs text-muted-foreground">
+                          {' '}
+                          (You)
+                        </span>
+                      )}
+                    </p>
                     {member.invitationStatus === 'invited' && (
                       <p className="text-xs text-muted-foreground">
                         Pending invitation
@@ -248,12 +290,20 @@ export const ManageAccess = ({
               </div>
 
               <div className="flex items-center gap-2">
-                {canUpdateRole(member.id) && (
-                  <RoleSelect
-                    value={member.role}
-                    onValueChange={(role) => handleRoleChange(member.id, role)}
-                    disabled={!canRemoveMembers || isUpdatingMembers}
-                  />
+                {member.user_id === owner?.id ? (
+                  <Badge variant="secondary" className="text-xs">
+                    Owner
+                  </Badge>
+                ) : (
+                  canUpdateRole(member.id) && (
+                    <RoleSelect
+                      value={member.role}
+                      onValueChange={(role) =>
+                        handleRoleChange(member.id, role)
+                      }
+                      disabled={!canRemoveMembers || isUpdatingMembers}
+                    />
+                  )
                 )}
               </div>
             </div>

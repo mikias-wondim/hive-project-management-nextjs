@@ -1,12 +1,12 @@
 import { UserCard } from '@/components/UserCard';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useProjectOwner } from '@/hooks/useProjectOwner';
 import { useProjectQueries } from '@/hooks/useProjectQueries';
 import { useParams } from 'next/navigation';
 
 export const Participants = () => {
   const { projectId } = useParams();
   const { members } = useProjectQueries(projectId as string);
-  const { user } = useCurrentUser();
+  const { owner } = useProjectOwner(projectId as string);
 
   return (
     <>
@@ -15,11 +15,11 @@ export const Participants = () => {
       </div>
       <div className="flex flex-wrap gap-2 text-xs py-2">
         <UserCard
-          id={user?.id || ''}
-          name={user?.name || ''}
-          avatarUrl={user?.avatar || ''}
-          description={user?.description}
-          links={user?.links}
+          id={owner?.id || ''}
+          name={owner?.name || ''}
+          avatarUrl={owner?.avatar || ''}
+          description={owner?.description}
+          links={owner?.links}
           showPreviewName={false}
         />
         {members?.map((member) => (

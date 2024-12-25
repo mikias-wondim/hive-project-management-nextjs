@@ -184,6 +184,42 @@ export const projects = {
       if (error) throw error;
       return (data as any[]).map((m) => m.user) as IUser[];
     },
+    getProjectOwner: async (projectId: string) => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select(
+          `
+          creator:created_by (
+            id,
+            name,
+            email,
+            avatar,
+            description,
+            links,
+            created_at,
+            updated_at
+          )
+        `
+        )
+        .eq('id', projectId)
+        .single();
+
+      if (error) throw error;
+      if (!data?.creator) return null;
+
+      const creator = data.creator as Record<string, any>;
+
+      return {
+        id: creator.id,
+        name: creator.name,
+        email: creator.email,
+        avatar: creator.avatar,
+        description: creator.description,
+        links: creator.links,
+        created_at: creator.created_at,
+        updated_at: creator.updated_at,
+      } as IUser;
+    },
   },
 
   // User's projects
