@@ -34,6 +34,8 @@ export const useAccessStore = create<AccessState>((set, get) => ({
     })),
 
   fetchProjectAccess: async (projectId) => {
+    if (!projectId) return;
+
     const {
       data: { session },
     } = await supabase.auth.getSession();

@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 interface Props {
   params: Promise<{ projectId: string }>;
@@ -19,20 +20,31 @@ export default async function InvitePage({ params, searchParams }: Props) {
     redirect(`/login?next=/invites/${projectId}?role=${role}`);
   }
 
+  // Check if user has been invited
+  const { data: projectMember, error: memberCheckError } = await supabase
+    .from('project_members')
+    .select('*')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .eq('invitationStatus', 'invited')
+    .single();
+
+  if (memberCheckError || !projectMember) {
+    notFound();
+  }
+
   // Update invitation status
-  const { error } = await supabase
+  const { error: updateError } = await supabase
     .from('project_members')
     .update({
       invitationStatus: 'accepted',
-      joined_at: new Date(),
+      joined_at: new Date().toISOString(),
     })
     .eq('project_id', projectId)
     .eq('user_id', user.id);
 
-  if (error) {
-    console.error('Error accepting invitation:', error);
-    redirect('/projects');
+  if (updateError) {
+    throw updateError;
   }
-
   redirect(`/projects/${projectId}`);
 }

@@ -173,6 +173,7 @@ export const CreateProjectModal = ({ projectDetails }: Props) => {
                 title="Create new size option"
                 handleSubmit={(data) => handleAddNewOptionItem(data, 'sizes')}
                 triggerBtn={AddNewOptionBtn}
+                action="create-new-project"
               />
             }
           />
@@ -189,6 +190,7 @@ export const CreateProjectModal = ({ projectDetails }: Props) => {
                   handleAddNewOptionItem(data, 'priorities')
                 }
                 triggerBtn={AddNewOptionBtn}
+                action="create-new-project"
               />
             }
           />
@@ -205,6 +207,7 @@ export const CreateProjectModal = ({ projectDetails }: Props) => {
                   handleAddNewOptionItem(data, 'statuses')
                 }
                 triggerBtn={AddNewOptionBtn}
+                action="create-new-project"
               />
             }
           />

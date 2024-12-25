@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { createClient } from '@/utils/supabase/client';
 import { compareAndUpdateItems, hasChanges } from '@/utils/array-utils';
 import { useState } from 'react';
+import { useProjectQueries } from '@/hooks/useProjectQueries';
 
 interface Props {
   projectId: string;
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export const Statuses = ({ projectId, items: initialItems }: Props) => {
+  const { reloadStatuses, reloadProjectTasks } = useProjectQueries(projectId);
   const [items, setItems] = useState(initialItems);
   const [statuses, setStatuses] = useState(initialItems);
   const [isSaving, setIsSaving] = useState(false);
@@ -62,6 +64,8 @@ export const Statuses = ({ projectId, items: initialItems }: Props) => {
         title: 'Success',
         description: 'Statuses updated successfully',
       });
+      await reloadStatuses();
+      await reloadProjectTasks();
     } catch (error) {
       console.error('Error saving statuses:', error);
       toast({

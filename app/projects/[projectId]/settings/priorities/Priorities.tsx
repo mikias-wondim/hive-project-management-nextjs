@@ -4,6 +4,7 @@ import { CreateCustomFieldOptionModal } from '@/components/CreateCustomFieldOpti
 import { CustomFieldOptions } from '@/components/CustomFieldOptions';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { useProjectQueries } from '@/hooks/useProjectQueries';
 import { cn } from '@/lib/utils';
 import { compareAndUpdateItems, hasChanges } from '@/utils/array-utils';
 import { createClient } from '@/utils/supabase/client';
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export const Priorities = ({ projectId, items: initialItems }: Props) => {
+  const { reloadPriorities, reloadProjectTasks } = useProjectQueries(projectId);
   const [items, setItems] = useState(initialItems);
   const [priorities, setPriorities] = useState(initialItems);
   const [isSaving, setIsSaving] = useState(false);
@@ -63,6 +65,8 @@ export const Priorities = ({ projectId, items: initialItems }: Props) => {
         title: 'Success',
         description: 'Priorities updated successfully',
       });
+      await reloadPriorities();
+      await reloadProjectTasks();
     } catch (error) {
       console.error('Error saving priorities:', error);
       toast({
@@ -94,6 +98,7 @@ export const Priorities = ({ projectId, items: initialItems }: Props) => {
         field="priority"
         options={priorities}
         setOptions={setPriorities}
+        description="Priorities are ordered from lowest (top) to highest (bottom). The last item in the list has the highest priority."
       />
 
       <div className="flex flex-col gap-2 items-end py-4">

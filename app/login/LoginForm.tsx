@@ -15,9 +15,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import { auth, type AuthError } from '@/utils/auth';
+import { auth } from '@/utils/auth';
 import { useToast } from '@/components/ui/use-toast';
 import { getAuthError } from '@/utils/auth-errors';
+import { OAuthSignIn } from '@/components/auth/OAuthSignIn';
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -41,22 +42,6 @@ export function LoginForm() {
         title: 'Authentication Error',
         description: message,
         duration: 5000,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleOAuthSignIn = async (provider: 'github' | 'google') => {
-    try {
-      setIsLoading(true);
-      await auth.signInWithOAuth(provider);
-    } catch (error) {
-      const { message } = getAuthError(error);
-      toast({
-        variant: 'destructive',
-        title: 'Authentication Error',
-        description: message,
       });
     } finally {
       setIsLoading(false);
@@ -113,39 +98,9 @@ export function LoginForm() {
             )}
             Sign In
           </Button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-          </div>
         </CardContent>
         <CardFooter>
-          <div className="grid grid-cols-2 gap-6 w-full">
-            <Button
-              variant="outline"
-              type="button"
-              disabled={isLoading}
-              onClick={() => handleOAuthSignIn('github')}
-            >
-              <Icons.gitHub className="mr-2 h-4 w-4" />
-              Github
-            </Button>
-            <Button
-              variant="outline"
-              type="button"
-              disabled={isLoading}
-              onClick={() => handleOAuthSignIn('google')}
-            >
-              <Icons.google className="mr-2 h-4 w-4" />
-              Google
-            </Button>
-          </div>
+          <OAuthSignIn isLoading={isLoading} onLoadingChange={setIsLoading} />
         </CardFooter>
       </form>
     </Card>

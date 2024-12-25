@@ -47,6 +47,7 @@ import { CustomFieldOptionOverlay } from './DragOverlays/CustomFieldOptionOverla
 interface Props {
   field: string;
   title?: string;
+  description?: string;
   options: ICustomFieldData[];
   hiddenDescription?: boolean;
   setOptions?: Dispatch<SetStateAction<ICustomFieldData[]>>;
@@ -57,6 +58,7 @@ export const CustomFieldOptions = ({
   field,
   options,
   title,
+  description,
   hiddenDescription,
   setOptions,
   embeddedCreateOptionEle,
@@ -135,6 +137,12 @@ export const CustomFieldOptions = ({
             <h1 className="text-lg py-3">{title || 'Options'}</h1>
             {embeddedCreateOptionEle}
           </div>
+          {description && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              {description}
+            </p>
+          )}
+
           <div className="border rounded-sm">
             <DndContext
               collisionDetection={closestCenter}

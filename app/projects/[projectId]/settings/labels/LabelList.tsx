@@ -11,11 +11,12 @@ import { cn } from '@/lib/utils';
 import { Ellipsis } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { LabelBadge } from '@/components/LabelBadge';
-import { useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { defaultFieldColor } from '@/consts/colors';
 import { CreateOrEditLabelForm } from '@/components/CreateOrEditLabelForm';
 import { createClient } from '@/utils/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { useProjectQueries } from '@/hooks/useProjectQueries';
 
 interface Props {
   labels: ICustomFieldData[];
@@ -30,6 +31,10 @@ export const LabelList = ({
   onLabelUpdated,
   onLabelDeleted,
 }: Props) => {
+  const { projectId } = useParams();
+  const { reloadLabels, reloadProjectTasks } = useProjectQueries(
+    projectId as string
+  );
   const [labelId, setLabelId] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const searchParams = useSearchParams();
@@ -62,6 +67,8 @@ export const LabelList = ({
         description: 'Label updated successfully',
       });
       setLabelId('');
+      await reloadLabels();
+      await reloadProjectTasks();
     } catch (error) {
       console.error('Error updating label:', error);
       toast({
@@ -85,6 +92,8 @@ export const LabelList = ({
         title: 'Success',
         description: 'Label deleted successfully',
       });
+      await reloadLabels();
+      await reloadProjectTasks();
     } catch (error) {
       console.error('Error deleting label:', error);
       toast({
