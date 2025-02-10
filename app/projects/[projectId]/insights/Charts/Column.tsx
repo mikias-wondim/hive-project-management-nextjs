@@ -12,9 +12,8 @@ import {
   BarChart,
   CartesianGrid,
   Legend,
-  ResponsiveContainer,
   XAxis,
-  YAxis,
+  YAxis
 } from 'recharts';
 
 interface Props {

@@ -235,9 +235,10 @@ export const projects = {
       // Get projects where user is a member
       supabase
         .from('project_members')
+        /* Get all fields from the projects table and alias it as 'project' */
         .select(
           `
-          project:projects (*)
+          project:projects (*) 
         `
         )
         .eq('user_id', userId)

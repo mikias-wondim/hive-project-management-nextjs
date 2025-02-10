@@ -74,8 +74,8 @@ export const AccountDetails = ({ initialData }: AccountDetailsProps) => {
   const updateLink = (index: number, field: 'label' | 'url', value: string) => {
     setFormData((prev) => ({
       ...prev,
-      links: prev.links.map((link, i) =>
-        i === index ? { ...link, [field]: value } : link
+      links: prev.links.map((link, index) =>
+        index === index ? { ...link, [field]: value } : link
       ),
     }));
   };

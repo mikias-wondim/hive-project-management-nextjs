@@ -16,6 +16,7 @@ import { TaskDetailsProvider } from './TaskDetailsContext';
 import { TaskDetailsDrawer } from './TaskDetailsDrawer';
 import { TaskItem } from './TaskItem';
 import { useBoardDragAndDrop } from './useBoardDragAndDrop';
+import { createPortal } from 'react-dom';
 
 interface Props {
   projectId: string;
@@ -179,15 +180,19 @@ export const Board: React.FC<Props> = ({
                 />
               ))}
 
-              <DragOverlay>
-                {activeTask && (
-                  <TaskItem
-                    item={activeTask}
-                    projectName={projectName}
-                    index={0}
-                  />
+              {typeof document !== 'undefined' &&
+                createPortal(
+                  <DragOverlay>
+                    {activeTask && (
+                      <TaskItem
+                        item={activeTask}
+                        projectName={projectName}
+                        index={0}
+                      />
+                    )}
+                  </DragOverlay>,
+                  document.body
                 )}
-              </DragOverlay>
             </DndContext>
           </div>
 

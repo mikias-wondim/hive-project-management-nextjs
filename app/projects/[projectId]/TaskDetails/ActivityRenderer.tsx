@@ -1,11 +1,9 @@
 import { CustomFieldTagRenderer } from '@/components/CustomFieldTagRenderer';
 import { LabelBadge } from '@/components/LabelBadge';
 import { UserCard } from '@/components/UserCard';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useProjectQueries } from '@/hooks/useProjectQueries';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { FC, useMemo } from 'react';
+import { FC } from 'react';
 
 // Helper components for each activity type
 const User = ({ user }: { user?: Partial<IUser> }) => {
