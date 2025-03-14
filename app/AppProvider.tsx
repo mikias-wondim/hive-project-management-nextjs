@@ -29,7 +29,7 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
         disableTransitionOnChange
       >
         <div className="h-16">
-          <Header title="Logo" logo="/vercel.svg" />
+          <Header title="hive" logo="/logo.svg" />
         </div>
         {children}
         <Toaster />
