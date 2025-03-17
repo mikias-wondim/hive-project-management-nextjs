@@ -29,10 +29,10 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
         disableTransitionOnChange
       >
         <div className="h-16">
-          <Header title="hive" logo="/logo.svg" />
+          <Header title="hive" logo="/logo.png" />
         </div>
         {children}
-        <Toaster />
+        <Toaster position="top-center" />
         <ReactQueryDevtools initialIsOpen={false} />
       </ThemeProvider>
     </QueryClientProvider>

@@ -4,6 +4,10 @@ import { Button } from "./ui/button";
 import Link from "next/link";
 import { ArrowRight, Kanban, Users, ChartPie, ChartBar } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { User } from "@supabase/supabase-js";
+import { createClient } from "@/utils/supabase/client";
+
 const features = [
   {
     icon: <Kanban />,
@@ -28,6 +32,26 @@ const features = [
 ];
 
 export default function LandingPage() {
+  const [user, setUser] = useState<User | null>(null);
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user || null);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase.auth]);
+
   return (
     <div className="bg-gradient-to-b from-background dark:from-background to-background/95">
       {/* Hero Section */}
@@ -48,24 +72,32 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <div className="flex gap-4">
+          <div className="mx-5 flex flex-col sm:flex-row gap-4 justify-center">
+            {user ? (
               <Button size="lg" asChild>
-                <Link href="/create-account">
-                  Get Started <ArrowRight className="w-4 h-4 ml-2" />
+                <Link href="/projects">
+                  View Projects <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/login">Sign in</Link>
-              </Button>
-            </div>
+            ) : (
+              <>
+                <Button size="lg" asChild>
+                  <Link href="/create-account">
+                    Get Started <ArrowRight className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link href="/login">Sign in</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Features */}
-          <div className="grid sm:grid-cols-2 gap-4 pt-4 max-w-[600px] mx-auto">
+          <div className="grid sm:grid-cols-2 gap-4 justify-center pt-4 max-w-[600px] mx-auto">
             {features.map((feature) => (
-              <div key={feature.title} className="text-left">
-                <div className="flex items-center gap-2">
+              <div key={feature.title} className="text-center sm:text-left">
+                <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2">
                   {feature.icon}
                   <h2 className="text-lg font-semibold">{feature.title}</h2>
                 </div>
@@ -75,7 +107,7 @@ export default function LandingPage() {
           </div>
 
           {/* Hero Image */}
-          <div className="relative w-full max-w-[1200px] mx-auto mt-20">
+          <div className="relative p-2 w-full max-w-[1200px] sm:mx-auto mt-20">
             <div className="relative">
               <div className="relative bg-background/95 backdrop-blur rounded-lg shadow-2xl">
                 <Image

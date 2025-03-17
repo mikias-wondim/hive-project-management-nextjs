@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Aboreto&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
 @import "tailwindcss";
 
 @plugin "tailwindcss-animate";
@@ -7,7 +9,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: "Montserrat", sans-serif;
+  --font-heading: "Aboreto", cursive;
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -120,4 +123,43 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@utility h-minus-80 {
+  height: calc(100vh - 80px);
+}
+
+@utility h-minus-135 {
+  height: calc(100vh - 135px);
+}
+
+@utility h-minus-160 {
+  height: calc(100vh - 160px);
+}
+
+@utility h-minus-180 {
+  height: calc(100vh - 180px);
+}
+
+@utility h-minus-230 {
+  height: calc(100vh - 230px);
+}
+
+@utility h-minus-250 {
+  height: calc(100vh - 250px);
+}
+
+@keyframes progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-progress {
+  animation-name: progress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
 }

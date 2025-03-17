@@ -1,4 +1,3 @@
-import React from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,27 +5,62 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { CircleUser, CreditCard, LogOut, Plus, UserIcon } from "lucide-react";
+import { CreditCard, LogOut, Plus, UserIcon } from "lucide-react";
 import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@radix-ui/react-dropdown-menu";
 import Link from "next/link";
-export default function UserMenu() {
-  const handleLogout = () => {};
+import { User } from "@supabase/supabase-js";
+import Image from "next/image";
+import { HiOutlineUserCircle } from "react-icons/hi2";
+import { auth } from "@/utils/auth";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+interface UserMenuProps {
+  user: User;
+}
+
+export default function UserMenu({ user }: UserMenuProps) {
+  const router = useRouter();
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Error logging out:", error);
+      toast.error("Error logging out", {
+        description: "Please try again",
+        closeButton: true,
+      });
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <CircleUser className="h-8 w-fit cursor-pointer" />
+        {user?.user_metadata.avatar_url ? (
+          <Image
+            src={user.user_metadata.avatar_url}
+            alt={user.email || "User Avatar"}
+            width={32}
+            height={32}
+            fill
+            className="rounded-full object-cover"
+          />
+        ) : (
+          <HiOutlineUserCircle className="h-8 w-fit cursor-pointer text-primary/90" />
+        )}
         <span className="sr-only">User Menu</span>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="min-w-56 p-2" align="end">
         <DropdownMenuLabel className="font-normal mb-2">
           <div className="flex flex-col space-y-1 mx-2">
-            <p className="text-sm font-medium leading-none">Mikias Wondim</p>
+            <p className="text-sm font-medium leading-none">{user.email}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              mikias@gmail.com
+              {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
