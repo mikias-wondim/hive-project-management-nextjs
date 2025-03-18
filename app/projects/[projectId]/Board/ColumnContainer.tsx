@@ -1,31 +1,31 @@
-'use client';
-import { successBtnStyles } from '@/app/commonStyles';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/use-toast';
-import { ProjectAction } from '@/consts';
-import { cn } from '@/lib/utils';
-import { createClient } from '@/utils/supabase/client';
-import { tasks as taskUtils } from '@/utils/tasks';
-import { UniqueIdentifier } from '@dnd-kit/core';
+"use client";
+import { successBtnStyles } from "@/app/commonStyles";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
+import { ProjectAction } from "@/consts";
+import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
+import { tasks as taskUtils } from "@/utils/tasks";
+import { UniqueIdentifier } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { User } from '@supabase/supabase-js';
-import { Plus, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { ColumnLabelColor } from './ColumnLabelColor';
-import { ColumnMenuOptions } from './ColumnMenuOptions';
-import { TaskItem } from './TaskItem';
-import { useDroppable } from '@dnd-kit/core';
-import { getLowestColumnPosition } from '@/utils/sort';
+} from "@dnd-kit/sortable";
+import { User } from "@supabase/supabase-js";
+import { Plus, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ColumnLabelColor } from "./ColumnLabelColor";
+import { ColumnMenuOptions } from "./ColumnMenuOptions";
+import { TaskItem } from "./TaskItem";
+import { useDroppable } from "@dnd-kit/core";
+import { getLowestColumnPosition } from "@/utils/sort";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from "@/components/ui/tooltip";
 
 interface Props {
   projectId: string;
@@ -55,7 +55,7 @@ export const ColumnContainer = ({
   onColumnHide,
 }: Props) => {
   const [showInput, setShowInput] = useState(false);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const { toast } = useToast();
@@ -63,7 +63,7 @@ export const ColumnContainer = ({
   const { setNodeRef } = useDroppable({
     id: column.id,
     data: {
-      type: 'column',
+      type: "column",
       column,
     },
   });
@@ -91,25 +91,25 @@ export const ColumnContainer = ({
         project_id: projectId,
         status_id: column.id,
         title: inputValue.trim(),
-        description: '',
+        description: "",
         created_by: user.id,
         statusPosition: newPosition,
       });
 
       toast({
-        title: 'Success',
-        description: 'Task created successfully',
+        title: "Success",
+        description: "Task created successfully",
       });
 
       onTaskCreated?.({ ...task, assignees: [] });
-      setInputValue('');
+      setInputValue("");
       setShowInput(false);
     } catch (error) {
-      console.error('Error creating task:', error);
+      console.error("Error creating task:", error);
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to create task',
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create task",
       });
     } finally {
       setIsCreating(false);
@@ -117,11 +117,11 @@ export const ColumnContainer = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleAddItem();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setShowInput(false);
-      setInputValue('');
+      setInputValue("");
     }
   };
 
@@ -130,7 +130,7 @@ export const ColumnContainer = ({
       ref={setNodeRef}
       className="w-[350px] overflow-x-hidden h-full flex-shrink-0 bg-gray-100 dark:bg-gray-950 rounded-md border border-gray-200 dark:border-gray-800 flex flex-col"
     >
-      <div className="p-2 space-y-1 flex-shrink-0">
+      <div className="p-2 space-y-1 flex-shrink-0 bg-background/80 border-b border-muted">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <ColumnLabelColor color={column.color} />
@@ -142,21 +142,21 @@ export const ColumnContainer = ({
                   <div
                     className={`px-2 h-4 rounded-full flex justify-center items-center text-[10px] ${
                       column.limit > 0 && columnTasks.length >= column.limit
-                        ? 'bg-red-200 dark:bg-red-950 text-red-700 dark:text-red-400'
-                        : 'bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-400'
+                        ? "bg-red-200 dark:bg-red-950 text-red-700 dark:text-red-400"
+                        : "bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-400"
                     }`}
                   >
-                    {columnTasks.length}{' '}
-                    {column.limit ? `/ ${column.limit}` : ''}
+                    {columnTasks.length}{" "}
+                    {column.limit ? `/ ${column.limit}` : ""}
                   </div>
                 </TooltipTrigger>
                 {column.limit > 0 && columnTasks.length >= column.limit && (
                   <TooltipContent>
                     <p>
-                      Column limit{' '}
+                      Column limit{" "}
                       {columnTasks.length > column.limit
-                        ? 'exceeded'
-                        : 'reached'}
+                        ? "exceeded"
+                        : "reached"}
                     </p>
                   </TooltipContent>
                 )}
@@ -190,9 +190,9 @@ export const ColumnContainer = ({
       >
         <div
           className={cn(
-            'flex-1 overflow-y-auto space-y-2 p-2',
+            "flex-1 overflow-y-auto space-y-2 p-2",
             isOver &&
-              'bg-gray-200 dark:bg-gray-900 border border-dashed border-gray-400 dark:border-gray-600'
+              "bg-gray-200 dark:bg-gray-900 border border-dashed border-gray-400 dark:border-gray-600"
           )}
         >
           {columnTasks.map((item, index) => (
@@ -221,15 +221,15 @@ export const ColumnContainer = ({
             />
             <Button
               onClick={handleAddItem}
-              className={cn(successBtnStyles, 'h-8 px-3')}
+              className={cn(successBtnStyles, "h-8 px-3")}
               disabled={!inputValue.trim() || isCreating}
             >
-              {isCreating ? 'Adding...' : 'Add'}
+              {isCreating ? "Adding..." : "Add"}
             </Button>
             <Button
               onClick={() => {
                 setShowInput(false);
-                setInputValue('');
+                setInputValue("");
               }}
               variant="ghost"
               className="h-8 w-8 p-0"

@@ -1,11 +1,11 @@
-'use client';
+"use client";
 import {
   CircleUser,
   CreditCard,
   LogOut,
   Plus,
   User as UserIcon,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,14 +14,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import Link from 'next/link';
-import { Button } from './ui/button';
-import Image from 'next/image';
-import { auth } from '@/utils/auth';
-import { useRouter } from 'next/navigation';
-import { useToast } from './ui/use-toast';
-import type { User } from '@supabase/supabase-js';
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
+import { Button } from "./ui/button";
+import Image from "next/image";
+import { auth } from "@/utils/auth";
+import { useRouter } from "next/navigation";
+import { useToast } from "./ui/use-toast";
+import type { User } from "@supabase/supabase-js";
 
 interface UserMenuProps {
   user: User;
@@ -34,13 +34,13 @@ export function UserMenu({ user }: UserMenuProps) {
   const handleSignOut = async () => {
     try {
       await auth.signOut();
-      router.push('/login');
+      router.push("/login");
       router.refresh();
     } catch (error) {
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to sign out. Please try again.',
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
       });
     }
   };
@@ -56,13 +56,13 @@ export function UserMenu({ user }: UserMenuProps) {
           {user.user_metadata.avatar_url ? (
             <Image
               src={user.user_metadata.avatar_url}
-              alt={user.email || ''}
+              alt={user.email || ""}
               fill
               className="rounded-full object-cover"
               referrerPolicy="no-referrer"
             />
           ) : (
-            <CircleUser className="h-5 w-5" />
+            <CircleUser className="h-8 w-8" strokeWidth={1} />
           )}
           <span className="sr-only">Open user menu</span>
         </Button>

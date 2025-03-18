@@ -1,15 +1,16 @@
-'use client';
-import React from 'react';
-import { ThemeToggle } from './ThemeToggle';
-import { UserMenu } from './UserMenu';
-import Link from 'next/link';
-import { Button } from './ui/button';
-import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
-import type { User } from '@supabase/supabase-js';
-import { usePathname } from 'next/navigation';
-import { useAccessStore } from '@/stores/useAccessStore';
+"use client";
+import React from "react";
+import { ThemeToggle } from "./ThemeToggle";
+import { UserMenu } from "./UserMenu";
+import Link from "next/link";
+import { Button } from "./ui/button";
+import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
+import type { User } from "@supabase/supabase-js";
+import { usePathname } from "next/navigation";
+import { useAccessStore } from "@/stores/useAccessStore";
+import Image from "next/image";
 
 interface HeaderProps {
   className?: string;
@@ -21,7 +22,7 @@ export const Header = ({ className }: HeaderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
-  const isLandingPage = pathname === '/';
+  const isLandingPage = pathname === "/";
 
   useEffect(() => {
     // Get initial session
@@ -50,16 +51,24 @@ export const Header = ({ className }: HeaderProps) => {
   return (
     <header
       className={cn(
-        'fixed top-0 w-full z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60',
+        "fixed top-0 w-full z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
         className
       )}
     >
       <div className="container flex h-16 items-center justify-between">
         <Link
-          href={user ? '/projects' : '/'}
-          className="flex items-center space-x-2 font-bold text-xl hover:text-primary transition-colors"
+          href="/"
+          className="flex gap-2 items-center font-bold hover:text-primary transition-colors"
         >
-          ProjeX
+          <Image
+            src={"/logo.png"}
+            alt={"logo"}
+            width={32}
+            height={32}
+            className="h-8 text-muted-foreground dark:text-muted-foreground dark:invert w-fit"
+          />
+
+          <span className="text-xl font-aboreto">Hive</span>
         </Link>
 
         <div className="flex items-center gap-4">

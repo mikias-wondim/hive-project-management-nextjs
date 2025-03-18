@@ -1,6 +1,6 @@
-import { createClient } from '@/utils/supabase/server';
-import { redirect } from 'next/navigation';
-import { ProjectDetails } from './ProjectDetails';
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
+import { ProjectDetails } from "./ProjectDetails";
 
 interface Props {
   params: Promise<{ projectId: string }>;
@@ -12,10 +12,11 @@ const ProjectDetailsPage = async ({ params }: Props) => {
 
   // Load project details
   const { data: project, error } = await supabase
-    .from('projects')
+    .from("projects")
     .select(
       `
       name,
+      description,
       statuses (
         id,
         label,
@@ -26,16 +27,17 @@ const ProjectDetailsPage = async ({ params }: Props) => {
       )
     `
     )
-    .order('order', { referencedTable: 'statuses' })
-    .eq('id', projectId)
+    .order("order", { referencedTable: "statuses" })
+    .eq("id", projectId)
     .single();
 
-  if (error || !project) redirect('/projects');
+  if (error || !project) redirect("/projects");
 
   return (
     <ProjectDetails
       projectName={project.name}
       projectId={projectId}
+      projectDescription={project.description}
       statuses={project.statuses as IStatus[]}
     />
   );

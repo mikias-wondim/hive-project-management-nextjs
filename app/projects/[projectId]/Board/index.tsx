@@ -1,22 +1,22 @@
-'use client';
-import { secondaryBtnStyles } from '@/app/commonStyles';
-import { CreateCustomFieldOptionModal } from '@/components/CreateCustomFieldOptionModal';
-import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/use-toast';
-import { useProjectAccess } from '@/hooks/useProjectAccess';
-import { useProjectQueries } from '@/hooks/useProjectQueries';
-import { cn } from '@/lib/utils';
-import { columns as columnsUtils } from '@/utils/columns';
-import { getColumnSortedTasks, sortTasks } from '@/utils/sort';
-import { closestCorners, DndContext, DragOverlay } from '@dnd-kit/core';
-import { Eye, Plus } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { ColumnContainer } from './ColumnContainer';
-import { TaskDetailsProvider } from './TaskDetailsContext';
-import { TaskDetailsDrawer } from './TaskDetailsDrawer';
-import { TaskItem } from './TaskItem';
-import { useBoardDragAndDrop } from './useBoardDragAndDrop';
-import { createPortal } from 'react-dom';
+"use client";
+import { secondaryBtnStyles } from "@/app/commonStyles";
+import { CreateCustomFieldOptionModal } from "@/components/CreateCustomFieldOptionModal";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
+import { useProjectAccess } from "@/hooks/useProjectAccess";
+import { useProjectQueries } from "@/hooks/useProjectQueries";
+import { cn } from "@/lib/utils";
+import { columns as columnsUtils } from "@/utils/columns";
+import { getColumnSortedTasks, sortTasks } from "@/utils/sort";
+import { closestCorners, DndContext, DragOverlay } from "@dnd-kit/core";
+import { Eye, Plus } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { ColumnContainer } from "./ColumnContainer";
+import { TaskDetailsProvider } from "./TaskDetailsContext";
+import { TaskDetailsDrawer } from "./TaskDetailsDrawer";
+import { TaskItem } from "./TaskItem";
+import { useBoardDragAndDrop } from "./useBoardDragAndDrop";
+import { createPortal } from "react-dom";
 
 interface Props {
   projectId: string;
@@ -83,22 +83,22 @@ export const Board: React.FC<Props> = ({
     (column) => !hiddenColumns.has(column.id)
   );
 
-  const handleCreateColumn = async (data: Omit<ICustomFieldData, 'id'>) => {
+  const handleCreateColumn = async (data: Omit<ICustomFieldData, "id">) => {
     try {
       setIsLoading(true);
       const newColumn = await columnsUtils.createColumn(projectId, data);
       setColumns((prev) => [...prev, newColumn]);
       toast({
-        title: 'Success',
-        description: 'Column created successfully',
-        variant: 'default',
+        title: "Success",
+        description: "Column created successfully",
+        variant: "default",
       });
     } catch (error) {
-      console.error('Error creating column:', error);
+      console.error("Error creating column:", error);
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to create column',
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create column",
       });
     } finally {
       setIsLoading(false);
@@ -110,7 +110,7 @@ export const Board: React.FC<Props> = ({
     updates: Partial<ITaskWithOptions>
   ) => {
     try {
-      if ('labels' in updates || 'size' in updates || 'priority' in updates) {
+      if ("labels" in updates || "size" in updates || "priority" in updates) {
         await reloadProjectTasks();
       } else {
         setTasks((prev) =>
@@ -122,18 +122,18 @@ export const Board: React.FC<Props> = ({
         );
       }
     } catch (error) {
-      console.error('Error updating task:', error);
+      console.error("Error updating task:", error);
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to update task',
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update task",
       });
     }
   };
 
   return (
     <TaskDetailsProvider onTaskUpdate={handleTaskUpdate}>
-      <div className="h-[calc(100vh-200px)]">
+      <div className="h-full">
         {hiddenColumns.size > 0 && (
           <div className="py-1">
             <Button
@@ -151,10 +151,8 @@ export const Board: React.FC<Props> = ({
         <div className="flex gap-1 w-full overflow-x-auto py-1">
           <div
             className={cn(
-              'flex gap-3',
-              hiddenColumns.size > 0
-                ? 'h-[calc(100vh-175px)]'
-                : 'h-[calc(100vh-155px)]'
+              "flex gap-3 h-full",
+              hiddenColumns.size > 0 ? "" : ""
             )}
           >
             <DndContext
@@ -180,7 +178,7 @@ export const Board: React.FC<Props> = ({
                 />
               ))}
 
-              {typeof document !== 'undefined' &&
+              {typeof document !== "undefined" &&
                 createPortal(
                   <DragOverlay>
                     {activeTask && (
@@ -201,7 +199,7 @@ export const Board: React.FC<Props> = ({
             handleSubmit={handleCreateColumn}
             triggerBtn={
               <Button
-                className={cn(secondaryBtnStyles, 'w-8 h-8 p-2 mr-4')}
+                className={cn(secondaryBtnStyles, "w-8 h-8 p-2 mr-4")}
                 disabled={isLoading}
               >
                 <Plus />
