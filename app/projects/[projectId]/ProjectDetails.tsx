@@ -52,14 +52,6 @@ export const ProjectDetails = ({
           {!isCollapsed && (
             <span className="text-xs text-gray-500 dark:text-gray-400">
               {projectDescription}
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Odit nam
-              in rem obcaecati reiciendis facilis sit beatae facere,
-              voluptatibus itaque modi nulla vero dignissimos molestias
-              necessitatibus quaerat! Consectetur, maxime obcaecati? Lorem ipsum
-              dolor sit amet consectetur adipisicing elit. Dignissimos incidunt
-              amet dolore iure magni, dicta ab quis aut doloremque voluptates
-              expedita itaque debitis illum repellendus iusto blanditiis dolores
-              voluptate nemo?
             </span>
           )}
         </div>
@@ -90,7 +82,7 @@ export const ProjectDetails = ({
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto px-[10px]">
         <Board
           projectId={projectId}
           projectName={projectName}

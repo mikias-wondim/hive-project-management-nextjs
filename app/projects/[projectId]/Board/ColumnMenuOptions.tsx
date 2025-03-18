@@ -1,31 +1,31 @@
-'use client';
-import { secondaryBtnStyles, successBtnStyles } from '@/app/commonStyles';
-import { CustomOptionForm } from '@/components/CustomOptionForm';
-import { Icons } from '@/components/Icons';
-import { Button } from '@/components/ui/button';
+"use client";
+import { secondaryBtnStyles, successBtnStyles } from "@/app/commonStyles";
+import { CustomOptionForm } from "@/components/CustomOptionForm";
+import { Icons } from "@/components/Icons";
+import { Button } from "@/components/ui/button";
 import {
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { useModalDialog } from '@/hooks/useModalDialog';
-import { cn } from '@/lib/utils';
-import { Dialog } from '@radix-ui/react-dialog';
-import { Ellipsis, EyeOff, Pencil, Trash } from 'lucide-react';
-import { useState } from 'react';
-import { columns } from '@/utils/columns';
-import { useToast } from '@/components/ui/use-toast';
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { useModalDialog } from "@/hooks/useModalDialog";
+import { cn } from "@/lib/utils";
+import { Dialog } from "@radix-ui/react-dialog";
+import { Ellipsis, EyeOff, Pencil, Trash } from "lucide-react";
+import { useState } from "react";
+import { columns } from "@/utils/columns";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Props {
   column: IStatus;
@@ -42,7 +42,7 @@ export const ColumnMenuOptions = ({
 }: Props) => {
   const { isModalOpen, openModal, closeModal } = useModalDialog();
   const [limit, setLimit] = useState(column.limit);
-  const [optionType, setOptionType] = useState('');
+  const [optionType, setOptionType] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -54,38 +54,38 @@ export const ColumnMenuOptions = ({
       const updatedColumn = await columns.updateLimit(column.id, limit);
       onColumnUpdate?.(updatedColumn);
       toast({
-        title: 'Success',
-        description: 'Column limit updated successfully',
+        title: "Success",
+        description: "Column limit updated successfully",
       });
       closeModal();
     } catch (error) {
-      console.error('Error updating limit:', error);
+      console.error("Error updating limit:", error);
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to update column limit',
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update column limit",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleUpdateDetails = async (data: Omit<ICustomFieldData, 'id'>) => {
+  const handleUpdateDetails = async (data: Omit<ICustomFieldData, "id">) => {
     try {
       setIsLoading(true);
       const updatedColumn = await columns.updateDetails(column.id, data);
       onColumnUpdate?.(updatedColumn);
       toast({
-        title: 'Success',
-        description: 'Column details updated successfully',
+        title: "Success",
+        description: "Column details updated successfully",
       });
       closeModal();
     } catch (error) {
-      console.error('Error updating details:', error);
+      console.error("Error updating details:", error);
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to update column details',
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update column details",
       });
     } finally {
       setIsLoading(false);
@@ -98,16 +98,16 @@ export const ColumnMenuOptions = ({
       await columns.deleteColumn(column.id);
       onColumnDelete?.(column.id);
       toast({
-        title: 'Success',
-        description: 'Column deleted successfully',
+        title: "Success",
+        description: "Column deleted successfully",
       });
       closeModal();
     } catch (error) {
-      console.error('Error deleting column:', error);
+      console.error("Error deleting column:", error);
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to delete column',
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete column",
       });
     } finally {
       setIsLoading(false);
@@ -127,7 +127,7 @@ export const ColumnMenuOptions = ({
           <DropdownMenuContent className="w-44">
             <DropdownMenuItem
               onClick={() => {
-                setOptionType('limit');
+                setOptionType("limit");
                 openModal();
               }}
             >
@@ -136,7 +136,7 @@ export const ColumnMenuOptions = ({
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                setOptionType('details');
+                setOptionType("details");
                 openModal();
               }}
             >
@@ -148,9 +148,9 @@ export const ColumnMenuOptions = ({
               <span className="text-xs">Hide from view</span>
             </DropdownMenuItem>
             <DropdownMenuItem
-              className="text-red-500"
+              className="bg-red-500/20 text-red-500 dark:bg-red-500/20 dark:text-red-500 hover:bg-red-500/20 hover:text-red-500 dark:hover:bg-red-500/20 dark:hover:text-red-500"
               onClick={() => {
-                setOptionType('delete');
+                setOptionType("delete");
                 openModal();
               }}
             >
@@ -160,7 +160,7 @@ export const ColumnMenuOptions = ({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {optionType === 'details' && (
+        {optionType === "details" && (
           <DialogContent className="max-w-96 max-h-[100vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Update option</DialogTitle>
@@ -185,11 +185,11 @@ export const ColumnMenuOptions = ({
           </DialogContent>
         )}
 
-        {optionType === 'limit' && (
+        {optionType === "limit" && (
           <DialogContent className="max-w-80 gap-2">
             <DialogHeader>
               <DialogTitle>
-                {column.limit === 0 ? 'Set column limit' : 'Edit column limit'}
+                {column.limit === 0 ? "Set column limit" : "Edit column limit"}
               </DialogTitle>
             </DialogHeader>
             <Separator className="my-2" />
@@ -207,30 +207,30 @@ export const ColumnMenuOptions = ({
             <Separator className="my-2" />
             <div className="flex justify-end gap-2">
               <Button
-                className={cn(secondaryBtnStyles, 'px-3 h-7')}
+                className={cn(secondaryBtnStyles, "px-3 h-7")}
                 onClick={() => {
                   closeModal();
-                  setOptionType('');
+                  setOptionType("");
                 }}
               >
                 Cancel
               </Button>
               <Button
-                className={cn(successBtnStyles, 'px-3 h-7')}
+                className={cn(successBtnStyles, "px-3 h-7")}
                 onClick={handleUpdateLimit}
                 disabled={isLoading || limit < 1 || limit === column.limit}
               >
-                {isLoading ? 'Saving...' : 'Save'}
+                {isLoading ? "Saving..." : "Save"}
               </Button>
             </div>
           </DialogContent>
         )}
 
-        {optionType === 'delete' && (
+        {optionType === "delete" && (
           <DialogContent className="max-w-96 gap-2">
             <DialogHeader>
               <DialogTitle>
-                Are you sure you want to delete <br />{' '}
+                Are you sure you want to delete <br />{" "}
                 {column.label.toUpperCase()} column
               </DialogTitle>
               <DialogDescription>
@@ -240,10 +240,10 @@ export const ColumnMenuOptions = ({
 
             <DialogFooter>
               <Button
-                className={cn(secondaryBtnStyles, 'bg-gray-50 px-3 h-7')}
+                className={cn(secondaryBtnStyles, "bg-gray-50 px-3 h-7")}
                 onClick={() => {
                   closeModal();
-                  setOptionType('');
+                  setOptionType("");
                   setLimit(column.limit);
                 }}
               >
@@ -252,12 +252,12 @@ export const ColumnMenuOptions = ({
               <Button
                 variant="outline"
                 className={cn(
-                  'text-red-600 dark:text-red-300 px-3 h-7 hover:bg-red-800 dark:hover:bg-red-600 hover:text-white dark:hover:text-white'
+                  "text-red-600 dark:text-red-300 px-3 h-7 hover:bg-red-800 dark:hover:bg-red-600 hover:text-white dark:hover:text-white"
                 )}
                 onClick={handleDeleteColumn}
                 disabled={isLoading}
               >
-                {isLoading ? 'Deleting...' : 'Delete'}
+                {isLoading ? "Deleting..." : "Delete"}
               </Button>
             </DialogFooter>
           </DialogContent>

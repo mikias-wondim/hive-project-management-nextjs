@@ -10,7 +10,7 @@ const fontSans = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "HIVE",
+  title: "Hive",
   description: "Project Management App",
 };
 

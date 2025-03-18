@@ -24,6 +24,9 @@ const config = {
         aboreto: ["Aboreto", ...fontFamily.sans],
         montserrat: ["Montserrat", ...fontFamily.sans],
       },
+      fontWeight: {
+        aboreto: "400 500 600 700 800 900",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
