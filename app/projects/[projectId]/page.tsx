@@ -17,6 +17,9 @@ const ProjectDetailsPage = async ({ params }: Props) => {
       `
       name,
       description,
+      created_at,
+      updated_at,
+      readme,
       statuses (
         id,
         label,
@@ -38,6 +41,9 @@ const ProjectDetailsPage = async ({ params }: Props) => {
       projectName={project.name}
       projectId={projectId}
       projectDescription={project.description}
+      projectCreatedAt={project.created_at}
+      projectUpdatedAt={project.updated_at}
+      projectReadme={project.readme}
       statuses={project.statuses as IStatus[]}
     />
   );

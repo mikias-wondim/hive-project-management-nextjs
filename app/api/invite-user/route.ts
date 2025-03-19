@@ -1,7 +1,7 @@
-import { InviteUserEmail } from '@/emails/invite-user';
-import { NextResponse } from 'next/server';
+import { InviteUserEmail } from "@/emails/invite-user";
+import { NextResponse } from "next/server";
 
-import { Resend } from 'resend';
+import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -11,14 +11,14 @@ export async function POST(request: Request) {
       await request.json();
 
     const { data, error } = await resend.emails.send({
-      from: 'ProjeX <noreply@mrshadrack.com>',
+      from: "Hive <onboarding@resend.dev>",
       to,
-      subject: 'Invitation to join a project',
+      subject: "Invitation to join a project",
       react: InviteUserEmail({
         username,
         projectName,
         invitedByUsername,
-        inviteLink: `${request.headers.get('origin')}/invites/${projectId}?role=${role}`,
+        inviteLink: `${request.headers.get("origin")}/invites/${projectId}?role=${role}`,
       }),
     });
 

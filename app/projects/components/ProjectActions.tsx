@@ -1,18 +1,19 @@
-'use client';
+"use client";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
-import { deleteBtnStyles } from '@/app/commonStyles';
-import Link from 'next/link';
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import { deleteBtnStyles } from "@/app/commonStyles";
+import Link from "next/link";
+import { EllipsisIcon } from "lucide-react";
 
 interface ProjectActionsProps {
   project: IProject;
-  tab: 'active' | 'all' | 'closed';
+  tab: "active" | "all" | "closed";
   setProjectToClose?: (id: string) => void;
   setProjectToReopen?: (id: string) => void;
   setProjectToDelete?: (project: IProject) => void;
@@ -27,11 +28,13 @@ export const ProjectActions = ({
 }: ProjectActionsProps) => (
   <div className="relative">
     <DropdownMenu>
-      <DropdownMenuTrigger className="font-bold">. . .</DropdownMenuTrigger>
+      <DropdownMenuTrigger className="font-bold">
+        <EllipsisIcon className="w-fit h-5" />
+      </DropdownMenuTrigger>
       <DropdownMenuContent
         onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
-        {tab === 'closed' || (tab === 'all' && project.closed) ? (
+        {tab === "closed" || (tab === "all" && project.closed) ? (
           <>
             <DropdownMenuItem onClick={() => setProjectToReopen?.(project.id)}>
               ReOpen

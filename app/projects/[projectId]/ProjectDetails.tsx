@@ -6,17 +6,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Ellipsis, LineChart, Settings } from "lucide-react";
+import { Ellipsis, Eye, EyeOff, LineChart, Settings } from "lucide-react";
 import Link from "next/link";
 import { Board } from "./Board";
 import { useProjectAccess } from "@/hooks/useProjectAccess";
 import { ProjectAction } from "@/consts";
 import { useState } from "react";
+import RichTextDisplay from "@/components/RichTextDisplay";
 
 interface ProjectDetailsProps {
   projectId: string;
   projectName: string;
   projectDescription?: string;
+  projectCreatedAt: string;
+  projectUpdatedAt: string;
+  projectReadme: string;
   statuses: IStatus[];
 }
 
@@ -24,10 +28,13 @@ export const ProjectDetails = ({
   projectId,
   projectName,
   projectDescription,
+  projectCreatedAt,
+  projectUpdatedAt,
+  projectReadme,
   statuses,
 }: ProjectDetailsProps) => {
   const { can } = useProjectAccess({ projectId });
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
@@ -35,24 +42,38 @@ export const ProjectDetails = ({
 
   return (
     <div className="w-full h-[calc(100vh-65px)] flex flex-col">
-      <div className="flex justify-between items-center gap-6 bg-white dark:bg-gray-950 border py-4 px-8">
+      <div className="flex justify-between items-start gap-6 bg-white dark:bg-gray-950 border py-4 px-8">
         <div className="flex flex-col gap-1">
-          <h1
-            title={projectName}
-            className="text-xl text-gray-700 dark:text-gray-300 truncate"
-          >
-            {projectName}{" "}
+          <div className="flex items-center gap-1">
+            <h1 className="text-xl text-gray-700 dark:text-gray-300 truncate">
+              {projectName}
+            </h1>
             <button
               onClick={toggleCollapse}
-              className="text-xs text-gray-600 dark:text-gray-400"
+              className="ml-2 text-xs text-gray-600 dark:text-gray-400"
             >
-              {isCollapsed ? "Show Details" : "Hide Details"}
+              {isCollapsed ? (
+                <Eye className="w-fit h-4" />
+              ) : (
+                <EyeOff className="w-fit h-4" />
+              )}
             </button>
-          </h1>
+          </div>
           {!isCollapsed && (
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {projectDescription}
-            </span>
+            <div className="flex flex-col gap-1 max-w-[500px] text-xs text-gray-500 dark:text-gray-400">
+              <span className="text-sm">{projectDescription}</span>
+              <div className="my-2 flex gap-2 justify-between">
+                <span className=" ">
+                  Created at: {new Date(projectCreatedAt).toLocaleDateString()},{" "}
+                  {new Date(projectCreatedAt).toLocaleTimeString()}
+                </span>
+                <span className="">
+                  Updated at: {new Date(projectUpdatedAt).toLocaleDateString()},{" "}
+                  {new Date(projectUpdatedAt).toLocaleTimeString()}
+                </span>
+              </div>
+              <RichTextDisplay text={projectReadme} size="lg" />
+            </div>
           )}
         </div>
 

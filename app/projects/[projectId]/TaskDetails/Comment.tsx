@@ -1,20 +1,20 @@
-import { secondaryBtnStyles, successBtnStyles } from '@/app/commonStyles';
-import { UserAvatar } from '@/components/Avatar';
-import TextEditor from '@/components/TextEditor';
-import { Button } from '@/components/ui/button';
+import { secondaryBtnStyles, successBtnStyles } from "@/app/commonStyles";
+import { UserAvatar } from "@/components/Avatar";
+import TextEditor from "@/components/TextEditor";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { UserCard } from '@/components/UserCard';
-import { useActivityQueries } from '@/hooks/useActivityQueries';
-import { useCommentQueries } from '@/hooks/useCommentQueries';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { cn } from '@/lib/utils';
-import { Ellipsis, Pen, Trash } from 'lucide-react';
-import { FC, useState } from 'react';
+} from "@/components/ui/dropdown-menu";
+import { UserCard } from "@/components/UserCard";
+import { useActivityQueries } from "@/hooks/useActivityQueries";
+import { useCommentQueries } from "@/hooks/useCommentQueries";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { cn } from "@/lib/utils";
+import { Ellipsis, Pen, Trash } from "lucide-react";
+import { FC, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,9 +25,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { useTaskDetails } from '../Board/TaskDetailsContext';
-import { toast } from '@/components/ui/use-toast';
+} from "@/components/ui/alert-dialog";
+import { useTaskDetails } from "../Board/TaskDetailsContext";
+import { toast } from "@/components/ui/use-toast";
 
 interface Props {
   comment: CommentResponse;
@@ -39,9 +39,9 @@ export const Comment: FC<Props> = ({ comment }) => {
   const { user } = useCurrentUser();
   const { selectedTask } = useTaskDetails();
   const { updateComment, deleteComment } = useCommentQueries(
-    selectedTask?.id || ''
+    selectedTask?.id || ""
   );
-  const { createActivity } = useActivityQueries(selectedTask?.id || '');
+  const { createActivity } = useActivityQueries(selectedTask?.id || "");
 
   const isCommentOwner = user?.id === comment.user.id;
 
@@ -57,8 +57,8 @@ export const Comment: FC<Props> = ({ comment }) => {
       setEditable(false);
     } catch (error) {
       toast({
-        title: 'Failed to update comment',
-        variant: 'destructive',
+        title: "Failed to update comment",
+        variant: "destructive",
       });
     }
   };
@@ -73,17 +73,17 @@ export const Comment: FC<Props> = ({ comment }) => {
         user_id: user?.id as string,
         content: [
           {
-            type: 'user',
+            type: "user",
             id: user?.id as string,
           },
-          'deleted a comment on',
-          { type: 'date', value: new Date().toISOString() },
+          "deleted a comment on",
+          { type: "date", value: new Date().toISOString() },
         ],
       });
     } catch (error) {
       toast({
-        title: 'Failed to delete comment',
-        variant: 'destructive',
+        title: "Failed to delete comment",
+        variant: "destructive",
       });
     }
   };
@@ -99,13 +99,13 @@ export const Comment: FC<Props> = ({ comment }) => {
         <div className="flex items-center gap-2 text-sm">
           <span>
             <UserCard
-              id={comment.user.id || ''}
-              name={comment.user.name || ''}
-              avatarUrl={comment.user.avatar || ''}
-              description={comment.user.description || ''}
+              id={comment.user.id || ""}
+              name={comment.user.name || ""}
+              avatarUrl={comment.user.avatar || ""}
+              description={comment.user.description || ""}
               links={comment.user.links || []}
             />
-          </span>{' '}
+          </span>{" "}
           <span className="text-gray-500">
             {new Date(comment.created_at).toDateString()}
           </span>
@@ -156,7 +156,7 @@ export const Comment: FC<Props> = ({ comment }) => {
         )}
       </div>
 
-      <div className="p-2 min-h-[120px]">
+      <div className="p-2 min-h-fit">
         {editable ? (
           <div>
             <div className="min-h-[180px]">
@@ -168,16 +168,17 @@ export const Comment: FC<Props> = ({ comment }) => {
             </div>
             <div className="flex items-center justify-end space-x-3 pt-2">
               <Button
-                className={cn(secondaryBtnStyles, 'h-8')}
+                className={cn(secondaryBtnStyles, "h-8")}
                 onClick={handleCancel}
               >
                 Cancel
               </Button>
               <Button
-                className={cn(successBtnStyles, 'h-8')}
+                className={cn(successBtnStyles, "h-8")}
                 onClick={handleUpdateComment}
                 disabled={
-                  !description.trim() || description === comment.content
+                  !description.replace(/<[^>]*>?/g, "").trim() ||
+                  description === comment.content
                 }
               >
                 Update Comment
@@ -185,11 +186,13 @@ export const Comment: FC<Props> = ({ comment }) => {
             </div>
           </div>
         ) : (
-          <TextEditor
-            content={description}
-            onChange={setDescription}
-            isEditable={false}
-          />
+          <div className="h-fit">
+            <TextEditor
+              content={description}
+              onChange={setDescription}
+              isEditable={false}
+            />
+          </div>
         )}
       </div>
     </div>

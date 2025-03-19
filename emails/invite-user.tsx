@@ -73,10 +73,10 @@ export const InviteUserEmail = ({
 };
 
 InviteUserEmail.PreviewProps = {
-  username: "John Doe",
-  invitedByUsername: "Jane Doe",
-  projectName: "Enigma",
-  inviteLink: "https://Projex.com/project/invite/foo",
+  username: "Enyew Anberbir",
+  invitedByUsername: "Mikias Wondim",
+  projectName: "Qimem Customization",
+  inviteLink: "https://qimemsolutions.vercel.app",
 } as InviteUserEmailProps;
 
 export default InviteUserEmail;
